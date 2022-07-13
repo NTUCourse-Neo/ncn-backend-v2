@@ -15,7 +15,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json({limit: '5mb'}));
-app.use('/api/v2', router);
+app.use('/api/v1', router);
 app.use('/api/v2/courses', course_router);
 app.use('/api/v2/course_tables', course_table_router);
 app.use('/api/v2/users', user_router);
