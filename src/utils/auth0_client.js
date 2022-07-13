@@ -1,6 +1,5 @@
 import axios from 'axios';
 import dotenv from 'dotenv-defaults';
-import { get } from 'mongoose';
 
 dotenv.config();
 

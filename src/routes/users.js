@@ -1,7 +1,6 @@
 import dotenv from 'dotenv-defaults';
 import express from "express";
 import * as auth0_client from "../utils/auth0_client";
-import Users from "../models/Users";
 import { PrismaClient } from '@prisma/client';
 import { checkJwt } from "../auth";
 import { sendWebhookMessage } from "../utils/webhook_client";
