@@ -11,10 +11,7 @@ const router = express.Router();
 const check_is_admin = async (user_id) => {
     const token = await auth0_client.get_token();
     const user_roles = await auth0_client.get_user_meta_roles(user_id, token);
-    if(!user_roles.includes('admin')){
-        return false;
-    }
-    return true;
+    return user_roles.includes('admin');
 };
 
 router.get('/', checkJwt, async (req, res) => {
@@ -127,71 +124,51 @@ router.patch('/:id', async (req, res) => {
     const _id = req.params.id;
     const name = req.body.name;
     const user_id = req.body.user_id;
-    const expire_ts = req.body.expire_ts;
     const courses = req.body.courses;
-    let current_ts = + new Date();
-    current_ts = parseInt(current_ts/1000, 10);
+    const current_ts = new Date();
     try{
-        let target = await Course_table.findOne({'_id': _id});
+        let target = await prisma.course_tables.findUnique({ where: { id: _id } });
         if(!target) {
             res.status(200).send({course_table: null, message: 'Course not found.'});
+            return
         }
-        else {
-            const origin_expire_ts = target.expire_ts;
-            if(origin_expire_ts && (current_ts > origin_expire_ts)) {
-                res.status(403).send({course_table: null, message: 'Course table is expired'});
+        if(target.expire_ts && (current_ts > target.expire_ts)) {
+            res.status(403).send({course_table: null, message: 'Course table is expired'});
+            return
+        }
+        if(user_id) {
+            if(target.user_id && (target.user_id !== user_id)) {
+                res.status(403).send({course_table: null, message: 'You are not authorized to update this course table.'});
+                return
             }
-            else if(user_id && expire_ts) {
-                res.status(403).send({course_table: null, message: 'User_id is not null, expire_ts should be null.'});
-            }
-            else if(user_id && !expire_ts) {
-                const new_table = await Course_table.findOneAndUpdate({'_id': _id}, {name: name, user_id: user_id, expire_ts: expire_ts, courses: courses}, {new: true});
-                res.status(200).send({course_table: new_table, message: 'Course table has been patched'});
-            }
-            else {
-                if(log_10(expire_ts) - log_10(current_ts) > 1) {
-                    res.status(403).send({course_table: null, message: 'expire_ts is in milliseconds, please convert it to seconds'});
+            const new_table = await prisma.course_tables.update({
+                where: { id: _id },
+                data: {
+                    name: name,
+                    user_id: user_id,
+                    courses: courses,
+                    expire_ts: null
                 }
-                else if(current_ts > expire_ts) {
-                    res.status(403).send({course_table: null, message: 'expire_ts is earlier than current time'});
+            });
+            res.status(200).send({course_table: new_table, message: 'Course table has been patched'});
+        }
+        else if(!user_id) {
+            const new_table = prisma.course_tables.update({
+                where: { id: _id },
+                data: {
+                    name: name,
+                    courses: courses,
                 }
-                else {
-                    const new_table = await Course_table.findOneAndUpdate({'_id': _id}, {name: name, user_id: user_id, expire_ts: expire_ts, courses: courses}, {new: true});
-                    res.status(200).send({course_table: new_table, message: 'Course table has been patched'});
-                }
+            });
+            res.status(200).send({course_table: new_table, message: 'Course table has been patched'});
+        }
                 
-            }
-        }
     }catch(err){
         res.status(500).send({course_table: null, message: err});
         const fields = [
             {name: "Component", value: "Backend API endpoint"},
             {name: "Method", value: "PATCH"},
             {name: "Route", value: "/course_tables/:id"},
-            {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
-            {name: "Error Log", value: "```\n" + err + "\n```"}
-        ]
-        await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
-        console.error(err);
-    }
-})
-
-router.delete('/', checkJwt, async (req, res) => {
-    if(await check_is_admin(req.user.sub)){
-        res.status(403).send({course_table: null, message: "You are not authorized to get this data."});
-        return;
-    }
-    try {
-        await Course_table.deleteMany({});
-        res.status(200).send({message: 'delete all course table successfully'});
-        console.log('delete all course table successfully.');
-    }
-    catch (err) {
-        res.status(500).send({message: err});
-        const fields = [
-            {name: "Component", value: "Backend API endpoint"},
-            {name: "Method", value: "DELETE"},
-            {name: "Route", value: "/course_tables/"},
             {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
             {name: "Error Log", value: "```\n" + err + "\n```"}
         ]
