@@ -1,17 +1,18 @@
 import dotenv from 'dotenv-defaults';
 import express from "express";
-import Course_table from "../models/Course_table";
-import Users from "../models/Users";
-import Otps from "../models/Otps";
 import * as auth0_client from "../utils/auth0_client";
+import Users from "../models/Users";
+import { PrismaClient } from '@prisma/client';
 import { checkJwt } from "../auth";
-import { sendOtpEmail } from '../utils/email_client';
 import { sendWebhookMessage } from "../utils/webhook_client";
 
 dotenv.config();
 
 const router = express.Router();
+const prisma = new PrismaClient();
 
+
+// API version: 2.0
 router.get('/:id', checkJwt, async (req, res) => {
   const user_id = req.params.id;
   const token_sub = req.user.sub;
@@ -26,11 +27,11 @@ router.get('/:id', checkJwt, async (req, res) => {
       res.status(404).send({user: null, message: "User is not registered in Auth0"});
       return;
     }
-    const db_user = await Users.findOne({'_id': user_id}).exec();
+    const db_user = await prisma.users.findUnique({ where: { id: user_id } });
     if(db_user){
       res.status(200).send({user: {db: db_user, auth0: auth0_user}, message: "Successfully get user by id."});
     }else{
-      res.status(200).send({user: null, message: "User not found in MongoDB."});
+      res.status(200).send({user: null, message: "User not found in DB."});
     }
   }
   catch (err) {
@@ -47,6 +48,7 @@ router.get('/:id', checkJwt, async (req, res) => {
   }
 })
 
+// API version: 2.0
 router.post('/', checkJwt, async (req, res) => {
   const email = req.body.user.email;
   const token_sub = req.user.sub;
@@ -54,48 +56,44 @@ router.post('/', checkJwt, async (req, res) => {
     if(!email){
       res.status(400).send({message: "email is required", user: null});
       return;
+    }
+    const db_user = await prisma.users.findUnique({ where: { email: email } });
+    if(db_user){
+      res.status(400).send({message: "email is already registered", user: null});
+      return;
+    }
+    const token = await auth0_client.get_token()
+    const auth0_users = await auth0_client.get_user_by_email(email, token)
+    let auth0_user;
+    if(auth0_users.length === 0){
+      res.status(400).send({message: "email is not registered", user: null});
+      return;
+    }else if(auth0_users.length === 1){
+      auth0_user = auth0_users[0];
     }else{
-      const db_user = await Users.findOne({'email': email});
-      if(db_user){
-        res.status(400).send({message: "email is already registered", user: null});
-        return;
-      }
-      const token = await auth0_client.get_token()
-      const auth0_users = await auth0_client.get_user_by_email(email, token)
-      let auth0_user;
-      if(auth0_users.length === 0){
-        res.status(400).send({message: "email is not registered", user: null});
-        return;
-      }else if(auth0_users.length === 1){
-        auth0_user = auth0_users[0];
-      }else{
-        auth0_user = auth0_users.filter(user => !user.identities.isSocial)[0];
-      }
-      if(token_sub !== auth0_user.user_id) {
-        res.status(403).send({course_table: null, message: "you are not authorized to get this user data."});
-        return;
-      }
-      let new_user = new Users({
-        _id: auth0_user.user_id,
+      auth0_user = auth0_users.filter(user => !user.identities.isSocial)[0];
+    }
+    if(token_sub !== auth0_user.user_id) {
+      res.status(403).send({course_table: null, message: "you are not authorized to get this user data."});
+      return;
+    }
+    const new_user = await prisma.users.create({
+      data: {
+        id: auth0_user.user_id,
         name: auth0_user.name,
         email: auth0_user.email,
-        gender: 0,
         student_id: "",
-        department: {
-          major: "",
-          d_major: "",
-          minors: []
-        },
         year: 0,
-        language: "",
+        major: "",
+        d_major: "",
+        minors: [],
+        languages: [],
         favorites:[],
         course_tables: [],
         history_courses: []
-      });
-      await new_user.save();
-      res.status(200).send({message: "User created", user: {db: new_user, auth0: auth0_user}});
-      return;
-    }
+      }
+    });
+    res.status(200).send({message: "User created", user: {db: new_user, auth0: auth0_user}});
   }catch(err){
     res.status(500).send({user: null, message: err});
     const fields = [
@@ -109,6 +107,7 @@ router.post('/', checkJwt, async (req, res) => {
   }
 });
 
+// API version: 2.0
 router.post('/:id/course_table', checkJwt, async (req, res) => {
   const course_table_id = req.body.course_table_id;
   const user_id = req.params.id;
@@ -130,7 +129,7 @@ router.post('/:id/course_table', checkJwt, async (req, res) => {
         return;
       }
       // Check if user is registered in MongoDB
-      const db_user = await Users.findOne({'_id': user_id});
+      const db_user = await prisma.users.findUnique({ where: { id: user_id } });
       if(!db_user){
         res.status(400).send({message: "User data not found"});
         return;
@@ -142,7 +141,7 @@ router.post('/:id/course_table', checkJwt, async (req, res) => {
       }
       // check if course_table_id is valid (is in coursetable collection).
       // check if user_id in course_table object is the same as user_id.
-      const course_table = await Course_table.findOne({"_id": course_table_id})
+      const course_table = await prisma.course_tables.findUnique({ where: { id: course_table_id } });
       if(course_table.user_id && course_table.user_id !== user_id){
         res.status(400).send({message: "Course table is already linked to another user"});
         return;
@@ -150,10 +149,13 @@ router.post('/:id/course_table', checkJwt, async (req, res) => {
       // Add user id to course_table object.
       try{
         if(!course_table.user_id){
-          await Course_table.updateOne({"_id": course_table_id}, {"user_id": user_id});
-        }
-        if(course_table.expire_ts){
-          await Course_table.updateOne({"_id": course_table_id}, {"expire_ts": null});
+          await prisma.course_tables.update({
+            where: { id: course_table_id },
+            data: { 
+              user_id: user_id,
+              expire_ts: null,
+            }
+          });
         }
       }catch{
         res.status(500).send({message: "Error in saving coursetable."});
@@ -171,10 +173,24 @@ router.post('/:id/course_table', checkJwt, async (req, res) => {
       // !if this step fails, it will set the user_id in course_table object back to null to prevent data inconsistency.
       let new_db_user;
       try{
-        const new_course_tables = [...db_user.course_tables, course_table_id];
-        new_db_user = await Users.findOneAndUpdate({'_id': user_id}, {'course_tables': new_course_tables}, {new: true});
+        new_db_user = await prisma.users.update({
+          where: { id: user_id },
+          data: { 
+            course_tables: {
+              push: course_table_id
+            }
+          }
+        });
       }catch{
-        await Course_table.updateOne({"_id": course_table_id}, {"user_id": null});
+        var expire_date = new Date();
+        expire_date.setDate(expire_date.getDate() + 1);
+        await prisma.course_tables.update({
+          where: { id: course_table_id },
+          data: {
+            user_id: null,
+            expire_ts: expire_date
+          }
+        });
         res.status(500).send({message: "Error in saving user data, restored coursetable data."});
         return;
       }
@@ -195,82 +211,13 @@ router.post('/:id/course_table', checkJwt, async (req, res) => {
   }
 });
 
-router.post('/student_id/link', checkJwt, async (req, res) => {
-  const user_id = req.user.sub;
-  const student_id = req.body.student_id;
-  let db_user = await Users.findOne({'_id': user_id}).exec();
-  if(!db_user){
-    res.status(400).send({message: "User data not found"});
-    return;
-  }else if(db_user.student_id !== ""){
-    res.status(400).send({message: "User's student id is already set"});
-    return;
-  }
-  if(await Users.findOne({'student_id': student_id})){
-    res.status(400).send({message: "Student id is already registered by other user."});
-    return;
-  }
-  if (req.body.otp_code){
-    const otps = await Otps.find({'user_id': user_id, 'student_id': student_id}, {}, { sort: { 'expire_ts': -1 } }).exec();
-    if(otps.length === 0){
-      res.status(400).send({message: "OTP expired or not found."});
-      return;
-    }
-    const otp = otps[0];
-    console.log(otp);
-    if(otp.expire_ts < Date.now()){
-      res.status(400).send({message: "OTP expired."});
-      return;
-    }
-    if(otp.otp_code !== req.body.otp_code){
-      res.status(400).send({message: "OTP code is not correct."});
-      return;
-    }
-    await Users.updateOne({'_id': user_id}, {'student_id': student_id});
-    await Otps.deleteMany({'user_id': user_id, 'student_id': student_id});
-    res.status(200).send({message: "Student ID linked successfully."});
-  }
-  else{
-    // get otp
-    const expire_minutes = process.env.OTP_EXPIRE_MINUTES || 5;
-    const expire_ts = Date.now() + expire_minutes * 60 * 1000;
-    // TODO: validate student_id
-    try{
-      // generate a random 6 digit number
-      const otp_code = Math.floor(100000 + Math.random() * 900000)
-      console.log(otp_code);
-      const new_otp = new Otps({
-        user_id: user_id,
-        student_id: student_id,
-        otp_code: otp_code,
-        expire_ts: expire_ts
-      });
-      await new_otp.save();
-      const ntu_mail = `${student_id}@ntu.edu.tw`;
-      // ! DISABLED FOR TESTING
-      sendOtpEmail(ntu_mail, otp_code, db_user.name);
-      res.status(200).send({message: "Successfully sent otp code to user's email.", expire_ts: expire_ts});
-    }catch(err){
-      console.error(err);
-      const fields = [
-        {name: "Component", value: "Backend API endpoint"},
-        {name: "Method", value: "POST"},
-        {name: "Route", value: "/users/student_id/link"},
-        {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
-        {name: "Error Log", value: "```\n" + err + "\n```"}
-      ]
-      await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
-      res.status(500).send({message: err});
-    }
-  }
-})
-
+// API version: 2.0
 router.patch('/', checkJwt, async (req, res) => {
   const user_id = req.user.sub;
   const patch_user = req.body.user;
   // Check if user exists
   try {
-    let db_user = await Users.findOne({'_id': user_id}).exec();
+    let db_user = await prisma.users.findUnique({ where: { id: user_id } });
     if(!db_user){
       res.status(404).send({message: "User not found"});
       return;
@@ -302,8 +249,10 @@ router.patch('/', checkJwt, async (req, res) => {
       return;
     }
     // Update user in MongoDB.
-    await Users.updateOne({'_id': user_id}, query).exec();
-    db_user = await Users.findOne({'_id': user_id}).exec();
+    db_user = await prisma.users.update({
+      where: { id: user_id },
+      data: query
+    });
     res.status(200).send({user:{ db:db_user, auth0: auth0_user}, message: "User updated."});
   } catch (err) {
     res.status(500).send({message: err});
@@ -319,15 +268,16 @@ router.patch('/', checkJwt, async (req, res) => {
   }
 });
 
+// API version: 2.0
 router.delete("/profile", checkJwt, async(req, res) => {
   try{
     const user_id = req.user.sub;
-    let db_user = await Users.findOne({'_id': user_id}).exec();
+    const db_user = await prisma.users.findUnique({ where: { id: user_id } });
     if(!db_user){
       res.status(400).send({message: "User profile data is not in DB."});
       return;
     }
-    await Users.deleteOne({'_id': user_id}).exec();
+    await prisma.users.deleteOne({ where: { id: user_id } });
     res.status(200).send({message: "Successfully deleted user profile."})
   }catch(err){
     res.status(500).send({message: err});
@@ -342,22 +292,23 @@ router.delete("/profile", checkJwt, async(req, res) => {
   }
 });
 
+// API version: 2.0
 router.delete("/account", checkJwt, async(req, res) => {
   try{
     const user_id = req.user.sub;
-    let db_user = await Users.findOne({'_id': user_id}).exec();
+    const db_user = await prisma.users.findUnique({ where: { id: user_id } });
     if(!db_user){
       res.status(400).send({message: "User profile data is not in DB."});
       return;
     }
-    await Users.deleteOne({'_id': user_id}).exec();
     const token = await auth0_client.get_token();
     const auth0_user = await auth0_client.get_user_by_id(user_id, token);
     if(!auth0_user){
       res.status(400).send({message: "User is not registered in Auth0"});
       return;
     }
-    const result = await auth0_client.delete_user_by_id(user_id, token);
+    await prisma.users.deleteOne({ where: { id: user_id } });
+    await auth0_client.delete_user_by_id(user_id, token);
     res.status(200).send({message: "Successfully deleted user account and profile."});
   }catch(err){
     res.status(500).send({message: err});
