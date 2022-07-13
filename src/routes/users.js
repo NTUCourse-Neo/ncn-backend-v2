@@ -322,6 +322,19 @@ router.delete("/account", checkJwt, async(req, res) => {
   }
 });
 
+// API version: 2.0
+// TODO
+router.post("/me/favorites", checkJwt, async(req, res) => {
+  const user_id = req.user.sub;
+  const course_ids = req.body.course_ids;
+});
+
+// API version: 2.0
+// TODO
+router.delete("/me/favorites/:course_id", checkJwt, async(req, res) => {
+  const user_id = req.user.sub;
+  const course_id = req.params.course_id;
+});
 
 
 export default router;
