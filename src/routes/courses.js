@@ -26,7 +26,7 @@ router.get('/', async (req, res) => {
       await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
       console.error(err);
     }
-})
+});
 
 // API version: 1.0
 router.post('/search', async (req, res) => {
@@ -268,6 +268,31 @@ router.post('/ids', async (req, res) => {
     await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
   }
 
-})
+});
+
+// API version: 2.0
+// TODO
+router.get('/:id/enrollinfo', async (req, res) => {
+  const course_id = req.params.id;
+});
+
+// API version: 2.0
+// TODO
+router.get('/:id/ptt/:board', async (req, res) => {
+  const course_id = req.params.id;
+  const ptt_board = req.params.board;
+});
+
+// API version: 2.0
+// TODO
+router.get('/:id/rating', async (req, res) => {
+  const course_id = req.params.id;
+});
+
+// API version: 2.0
+// TODO
+router.get('/:id/syllabus', async (req, res) => {
+  const course_id = req.params.id;
+});
 
 export default router;
