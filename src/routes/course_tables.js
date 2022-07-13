@@ -1,5 +1,4 @@
 import express from 'express';
-import Course_table from '../models/Course_table';
 import { PrismaClient } from '@prisma/client';
 import { sendWebhookMessage } from '../utils/webhook_client';
 import { checkJwt } from '../auth';
@@ -15,7 +14,7 @@ const check_is_admin = async (user_id) => {
 };
 
 router.get('/', checkJwt, async (req, res) => {
-    if(await !check_is_admin(req.user.sub)){
+    if(!await check_is_admin(req.user.sub)){
         res.status(403).send({course_table: null, message: "You are not authorized to get this data."});
         return;
     }
@@ -178,13 +177,13 @@ router.patch('/:id', async (req, res) => {
 })
 
 router.delete('/:id', checkJwt, async (req, res) => {
-    if(await check_is_admin(req.user.sub)){
+    if(!await check_is_admin(req.user.sub)){
         res.status(403).send({course_table: null, message: "You are not authorized to get this data."});
         return;
     }
-    const _id = req.params.id;
+    const course_table_id = req.params.id;
     try {
-        await Course_table.deleteOne({'_id': _id});
+        await prisma.course_tables.delete({ where: { id: course_table_id } });
         res.status(200).send({message: 'delete course table successfully.'});
         console.log('delete course table successfully.');
     }
@@ -201,11 +200,6 @@ router.delete('/:id', checkJwt, async (req, res) => {
         console.error(err); 
     }
 })
-
-function log_10(x) {
-    return Math.log(x)/Math.log(10);
-}
-
 
 
 export default router;
