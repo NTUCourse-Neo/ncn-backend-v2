@@ -19,7 +19,7 @@ const get_self_vote_status = (post, user_id) => {
   }
 }
 
-
+// API version: 1.0
 router.get('/posts/:id/', checkJwt, async (req, res) => {
   // get course social posts by post id
   try{
@@ -56,6 +56,7 @@ router.get('/posts/:id/', checkJwt, async (req, res) => {
   }
 })
 
+// API version: 1.0
 router.get('/courses/:id/posts', checkJwt, async (req, res) => {
   // get course social posts by course id
   try{
@@ -95,6 +96,7 @@ router.get('/courses/:id/posts', checkJwt, async (req, res) => {
   }
 })
 
+// API version: 1.0
 router.post('/courses/:id/posts', checkJwt, async (req, res) => {
   // create course social posts by course id
   try{
@@ -146,6 +148,7 @@ router.post('/courses/:id/posts', checkJwt, async (req, res) => {
   }
 })
 
+// API version: 1.0
 router.post('/posts/:id/report', checkJwt, async (req, res) => {
   // report a post by post id
   try{
@@ -198,6 +201,7 @@ router.post('/posts/:id/report', checkJwt, async (req, res) => {
   }
 })
 
+// API version: 1.0
 router.patch('/posts/:id/votes', checkJwt, async (req, res) => {
   // like or dislike a social post by post id
   // type: like (1), dislike (-1), cancel (0)
@@ -263,6 +267,7 @@ router.patch('/posts/:id/votes', checkJwt, async (req, res) => {
   }
 })
 
+// API version: 1.0
 router.delete('/posts/:id', checkJwt, async (req, res) => {
   // delete a social post by post id
   try{

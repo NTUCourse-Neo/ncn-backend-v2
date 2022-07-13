@@ -6,6 +6,7 @@ import { sendWebhookMessage } from "../utils/webhook_client";
 
 const router = express.Router();
 
+// API version: 1.0
 router.get('/', async (req, res) => {
     let courses_pack;
     try {
@@ -27,6 +28,7 @@ router.get('/', async (req, res) => {
     }
 })
 
+// API version: 1.0
 router.post('/search', async (req, res) => {
     const query = req.body.query;
     const paths = req.body.paths;
@@ -57,6 +59,7 @@ router.post('/search', async (req, res) => {
     }
 });
 
+// API version: 1.0
 router.post('/ids', async (req, res) => {
   const ids = req.body.ids;
   const filter = req.body.filter;

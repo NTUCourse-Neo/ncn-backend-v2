@@ -13,6 +13,7 @@ const check_is_admin = async (user_id) => {
     return user_roles.includes('admin');
 };
 
+// API version: 2.0
 router.get('/', checkJwt, async (req, res) => {
     if(!await check_is_admin(req.user.sub)){
         res.status(403).send({course_table: null, message: "You are not authorized to get this data."});
@@ -38,6 +39,7 @@ router.get('/', checkJwt, async (req, res) => {
     }
 })
 
+// API version: 2.0
 router.get('/:id', async (req, res) => {
     let course_table_id = req.params.id;
     let result;
@@ -74,6 +76,7 @@ router.get('/:id', async (req, res) => {
     }
 })
 
+// API version: 2.0
 router.post('/', async (req, res) => {
     const course_table_id = req.body.id;
     const course_table_name = req.body.name;
@@ -119,6 +122,7 @@ router.post('/', async (req, res) => {
     }
 })
 
+// API version: 2.0
 router.patch('/:id', async (req, res) => {
     const _id = req.params.id;
     const name = req.body.name;
@@ -176,6 +180,7 @@ router.patch('/:id', async (req, res) => {
     }
 })
 
+// API version: 2.0
 router.delete('/:id', checkJwt, async (req, res) => {
     if(!await check_is_admin(req.user.sub)){
         res.status(403).send({course_table: null, message: "You are not authorized to get this data."});

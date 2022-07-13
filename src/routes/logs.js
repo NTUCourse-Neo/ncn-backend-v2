@@ -5,6 +5,7 @@ require('dotenv-defaults').config();
 const router = express.Router();
 
 
+// API version: 1.0
 router.post('/error', async(req, res) => {
   try{
     // use request body msg as fields.
@@ -19,6 +20,7 @@ router.post('/error', async(req, res) => {
   }
 });
 
+// API version: 1.0
 router.post('/info', async(req, res) => {
   try{
     const fields = Object.keys(req.body).map(key => {

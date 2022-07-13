@@ -5,6 +5,7 @@ import { sendWebhookMessage } from "../utils/webhook_client";
 
 dotenv.config();
 
+// API version: 1.0
 const router = express.Router();
 router.post('/', async (req, res) => {
   const captcha_response = req.body.captcha_token;
