@@ -1,13 +1,14 @@
 import express from 'express';
 import Social_posts from '../models/Social_posts';
 import Post_reports from '../models/Post_reports';
-import Courses from '../models/Courses';
+import { PrismaClient } from '@prisma/client';
 import { sendWebhookMessage } from '../utils/webhook_client';
 import { checkJwt } from '../auth';
 import { v4 as uuidv4 } from 'uuid';
 
 // route: "/api/v1/social"
 const router = express.Router();
+const prisma = new PrismaClient();
 
 const get_self_vote_status = (post, user_id) => {
   if(post.upvotes.includes(user_id)){
@@ -102,7 +103,7 @@ router.post('/courses/:id/posts', checkJwt, async (req, res) => {
   try{
     const user_id = req.user.sub;
     const course_id = req.params.id;
-    const course = await Courses.findOne({'_id': course_id});
+    const course = await prisma.courses.findUnique({where: {id: course_id}});
     if (!course) {
       res.status(404).send({message: "Course not found."});
       return;
