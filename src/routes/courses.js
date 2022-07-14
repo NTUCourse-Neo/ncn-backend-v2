@@ -1,6 +1,7 @@
 import express from "express";
 import search from '../utils/search';
 import collection from "../utils/mongo_client";
+import axios from "axios";
 import { PrismaClient } from "@prisma/client";
 import { sendWebhookMessage } from "../utils/webhook_client";
 import { course_include_all } from "../prisma/course_query";
@@ -174,9 +175,57 @@ router.get('/:id', async (req, res) => {
 });
 
 // API version: 2.0
-// TODO
 router.get('/:id/enrollinfo', async (req, res) => {
+  try{
+    const course_id = req.params.id;
+    let course_enroll_data;
+    const db_data = await prisma.course_enrollinfo.findFirst({
+      where: { course_id: { equals: `${process.env.SEMESTER}_${course_id}` } },
+      orderBy: { fetch_ts: 'desc' },
+    })
+    if(!db_data || isExpired(db_data.fetch_ts) ) {
+      const url = `${process.env.LIVE_API_ENDPOINT}/api/v1/courses/${course_id}/enrollinfo`;
+      try{
+        const resp = await axios.get(url);
+        course_enroll_data = resp.data.course_status
+      }catch(err){
+        console.log(err);
+        course_enroll_data = db_data ? db_data.content : null;
+      }
+      await prisma.course_enrollinfo.create({
+        data: {
+          course_id: `${process.env.SEMESTER}_${course_id}`,
+          content: course_enroll_data,
+          fetch_ts: new Date()
+        }
+      });
+    }else{
+      course_enroll_data = db_data.content;
+    }
+    res.status(200).send({
+      course_id: `${process.env.SEMESTER}_${course_id}`,
+      course_status: course_enroll_data,
+      message: "Successfully retrieved course enroll info."
+    });
+
+  }catch(err){
+    console.log(err);
+    res.status(500).send({message: err});
+    const fields = [
+      {name: "Component", value: "Backend API endpoint"},
+      {name: "Method", value: "GET"},
+      {name: "Route", value: "/courses/:id/enrollinfo"},
+      {name: "Error Log", value: "```\n" + err + "\n```"}
+    ];
+    await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
+  }
+});
+
+// API version: 2.0
+// TODO
+router.get('/:id/rating', async (req, res) => {
   const course_id = req.params.id;
+
 });
 
 // API version: 2.0
@@ -188,15 +237,15 @@ router.get('/:id/ptt/:board', async (req, res) => {
 
 // API version: 2.0
 // TODO
-router.get('/:id/rating', async (req, res) => {
-  const course_id = req.params.id;
-});
-
-// API version: 2.0
-// TODO
 router.get('/:id/syllabus', async (req, res) => {
   const course_id = req.params.id;
 });
+
+function isExpired(expire_time){
+  const now = new Date();
+  expire_time.setSeconds(expire_time.getSeconds() + Number(process.env.LIVE_DATA_RENEW_INTERVAL));
+  return now > expire_time;
+}
 
 function generate_course_filter (filter, ids=null) {
   const strict_match = filter.strict_match;
