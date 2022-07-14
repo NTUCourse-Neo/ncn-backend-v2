@@ -1,0 +1,13 @@
+{
+  "apps": [
+    {
+      "script": "npm",
+      "name": "ncn",
+      "instances": 4,
+      "args": "run server",
+      "exec_mode": "cluster",
+      "wait_ready": true,
+      "watch": true
+    }
+  ]
+}
