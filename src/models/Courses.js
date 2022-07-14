@@ -17,7 +17,7 @@ const courses = new Schema({
     enroll_method: String,  // 加選方式
     time_loc: String,   // 時間,地點
     total_slot: Number,     // 人數
-    litmit: String,     // 限制
+    limit: String,     // 限制
     note: String,   // 備註
     url: Object,
     semester: String,   //  學年
@@ -25,6 +25,7 @@ const courses = new Schema({
     is_intensive_course: Array,
     time_loc_pair: Array,
     provider: String,
+    can_be_selective: Boolean,
 })
 
 const Courses = mongoose.model('1102_courses', courses);
