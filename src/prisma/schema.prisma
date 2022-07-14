@@ -70,33 +70,37 @@ model course_tables {
 }
 
 model courses {
-  id               String                 @id
-  serial           String
-  code             String
-  identifier       String
-  name             String
-  semester         String
-  teacher          String?
-  limitation       String?
-  note             String?
-  cool_url         String?
-  credits          Float?
-  can_be_selective Boolean
-  is_half_year     Boolean
-  requirement      course_requirements
-  language         course_languages
-  provider         course_providers
-  slot             Int
-  enroll_method    Int
-  intensive_weeks  Int[]
-  departments_raw  String[]
-  class            String?
-  areas            course_areas[]
-  departments      course_departments[]
-  prerequisites    course_prerequisites[] @relation("course_prerequisites_course_idTocourses")
-  prerequisite_of  course_prerequisites[] @relation("course_prerequisites_pre_course_idTocourses")
-  schedules        course_schedules[]
-  specialties      course_specialties[]
+  id                String                 @id
+  serial            String
+  code              String
+  identifier        String
+  name              String
+  semester          String
+  teacher           String?
+  limitation        String?
+  note              String?
+  cool_url          String?
+  credits           Float?
+  can_be_selective  Boolean
+  is_half_year      Boolean
+  requirement       course_requirements
+  language          course_languages
+  provider          course_providers
+  slot              Int
+  enroll_method     Int
+  intensive_weeks   Int[]
+  departments_raw   String[]
+  class             String?
+  areas             course_areas[]
+  departments       course_departments[]
+  course_enrollinfo course_enrollinfo[]
+  prerequisites     course_prerequisites[] @relation("course_prerequisites_course_idTocourses")
+  prerequisite_of   course_prerequisites[] @relation("course_prerequisites_pre_course_idTocourses")
+  course_ptt        course_ptt[]
+  course_rating     course_rating[]
+  schedules         course_schedules[]
+  specialties       course_specialties[]
+  course_syllabus   course_syllabus[]
 }
 
 model users {
@@ -156,6 +160,44 @@ model specialty {
   course_specialties course_specialties[]
 
   @@unique([id, name], map: "specialties_id_name_key")
+}
+
+model course_enrollinfo {
+  course_id String
+  content   Json?    @db.Json
+  fetch_ts  DateTime @db.Date
+  courses   courses  @relation(fields: [course_id], references: [id], onDelete: NoAction)
+
+  @@id([course_id, fetch_ts])
+}
+
+model course_ptt {
+  course_id String
+  type      Int
+  content   Json?    @db.Json
+  fetch_ts  DateTime @db.Date
+  courses   courses  @relation(fields: [course_id], references: [id], onDelete: NoAction)
+
+  @@id([course_id, type, fetch_ts])
+}
+
+model course_rating {
+  course_id String
+  content   Json?    @db.Json
+  fetch_ts  DateTime @db.Date
+  courses   courses  @relation(fields: [course_id], references: [id], onDelete: NoAction)
+
+  @@id([course_id, fetch_ts])
+}
+
+model course_syllabus {
+  course_id String
+  syllabus  Json?    @db.Json
+  grade     Json?    @db.Json
+  fetch_ts  DateTime @db.Date
+  courses   courses  @relation(fields: [course_id], references: [id], onDelete: NoAction)
+
+  @@id([course_id, fetch_ts])
 }
 
 enum course_languages {
