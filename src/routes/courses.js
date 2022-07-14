@@ -1,11 +1,9 @@
 import express from "express";
-import courses from '../models/Courses';
 import search from '../utils/search';
 import collection from "../utils/mongo_client";
 import { PrismaClient } from "@prisma/client";
 import { sendWebhookMessage } from "../utils/webhook_client";
 import { course_include_all } from "../prisma/course_query";
-import e from "express";
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -74,8 +72,8 @@ router.post('/search', async (req, res) => {
     try {
       if (query === "" || !query) {
         // if query is empty, return all courses
-        const courses_pack = await courses.find().select({"_id": 1});
-        let result = courses_pack.map(a => a._id);
+        const courses_pack = await prisma.courses.findMany({ select: { id: true }});
+        let result = courses_pack.map(a => a.id);
         res.status(200).send({ids: result});
       }
       else {
