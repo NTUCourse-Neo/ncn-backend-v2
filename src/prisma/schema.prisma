@@ -8,28 +8,11 @@ datasource db {
   url      = env("POSTGRES_URL")
 }
 
-model areas {
-  id           String         @id
-  code         String
-  name         String
-  course_areas course_areas[]
-
-  @@unique([id, code, name])
-}
-
-model colleges {
-  id          String        @id
-  name        String
-  departments departments[]
-
-  @@unique([id, name])
-}
-
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
 model course_areas {
   course_id String
   area_id   String
-  areas     areas   @relation(fields: [area_id], references: [id])
+  area      area    @relation(fields: [area_id], references: [id])
   courses   courses @relation(fields: [course_id], references: [id], onDelete: Cascade)
 
   @@id([course_id, area_id])
@@ -39,8 +22,8 @@ model course_areas {
 model course_departments {
   course_id     String
   department_id String
-  courses       courses     @relation(fields: [course_id], references: [id], onDelete: Cascade)
-  departments   departments @relation(fields: [department_id], references: [id])
+  courses       courses    @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  department    department @relation(fields: [department_id], references: [id])
 
   @@id([course_id, department_id])
 }
@@ -49,8 +32,8 @@ model course_departments {
 model course_prerequisites {
   course_id                                           String
   pre_course_id                                       String
-  courses_course_prerequisites_course_idTocourses     courses @relation("course_prerequisites_course_idTocourses", fields: [course_id], references: [id], onDelete: Cascade)
-  courses_course_prerequisites_pre_course_idTocourses courses @relation("course_prerequisites_pre_course_idTocourses", fields: [pre_course_id], references: [id])
+  courses_course_prerequisites_course_idTocourses     courses @relation("course_prerequisites_course_idTocourses", fields: [course_id], references: [id], onDelete: Cascade, map: "course_prerequisites")
+  courses_course_prerequisites_pre_course_idTocourses courses @relation("course_prerequisites_pre_course_idTocourses", fields: [pre_course_id], references: [id], map: "course_prerequisites_pre")
 
   @@id([course_id, pre_course_id])
 }
@@ -70,8 +53,8 @@ model course_schedules {
 model course_specialties {
   course_id    String
   specialty_id String
-  courses      courses     @relation(fields: [course_id], references: [id], onDelete: Cascade)
-  specialties  specialties @relation(fields: [specialty_id], references: [id])
+  courses      courses   @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  specialty    specialty @relation(fields: [specialty_id], references: [id])
 
   @@id([course_id, specialty_id])
 }
@@ -87,75 +70,92 @@ model course_tables {
 }
 
 model courses {
-  id                                                               String                 @id
-  serial                                                           String
-  code                                                             String
-  identifier                                                       String
-  name                                                             String
-  semester                                                         String
-  teacher                                                          String?
-  limitation                                                       String?
-  note                                                             String?
-  cool_url                                                         String?
-  credits                                                          Float?
-  can_be_selective                                                 Boolean
-  is_half_year                                                     Boolean
-  requirement                                                      course_requirements
-  language                                                         course_languages
-  provider                                                         course_providers
-  slot                                                             Int
-  enroll_method                                                    Int
-  intensive_weeks                                                  Int[]
-  departments_raw                                                  String[]
-  class                                                            String?
-  course_areas                                                     course_areas[]
-  course_departments                                               course_departments[]
-  course_prerequisites_course_prerequisites_course_idTocourses     course_prerequisites[] @relation("course_prerequisites_course_idTocourses")
-  course_prerequisites_course_prerequisites_pre_course_idTocourses course_prerequisites[] @relation("course_prerequisites_pre_course_idTocourses")
-  course_schedules                                                 course_schedules[]
-  course_specialties                                               course_specialties[]
-}
-
-model departments {
-  id                               String               @id
-  college_id                       String?
-  name_short                       String?
-  name_full                        String
-  name_alt                         String?
-  colleges                         colleges?            @relation(fields: [college_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "id")
-  course_departments               course_departments[]
-  users_departmentsTousers_d_major users[]              @relation("departmentsTousers_d_major")
-  users_departmentsTousers_major   users[]              @relation("departmentsTousers_major")
-
-  @@unique([id, name_full])
-}
-
-model specialties {
-  id                 String               @id
-  name               String
-  course_specialties course_specialties[]
-
-  @@unique([id, name])
+  id               String                 @id
+  serial           String
+  code             String
+  identifier       String
+  name             String
+  semester         String
+  teacher          String?
+  limitation       String?
+  note             String?
+  cool_url         String?
+  credits          Float?
+  can_be_selective Boolean
+  is_half_year     Boolean
+  requirement      course_requirements
+  language         course_languages
+  provider         course_providers
+  slot             Int
+  enroll_method    Int
+  intensive_weeks  Int[]
+  departments_raw  String[]
+  class            String?
+  areas            course_areas[]
+  departments      course_departments[]
+  prerequisites    course_prerequisites[] @relation("course_prerequisites_course_idTocourses")
+  prerequisite_of  course_prerequisites[] @relation("course_prerequisites_pre_course_idTocourses")
+  schedules        course_schedules[]
+  specialties      course_specialties[]
 }
 
 model users {
-  id                                     String          @id
-  name                                   String
-  email                                  String
-  student_id                             String?
-  year                                   Int             @default(0)
-  major                                  String?
-  d_major                                String?
-  minors                                 String[]
-  languages                              String[]
-  favorites                              String[]
-  course_tables                          String[]
-  history_courses                        String[]
-  departments_departmentsTousers_d_major departments?    @relation("departmentsTousers_d_major", fields: [d_major], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  departments_departmentsTousers_major   departments?    @relation("departmentsTousers_major", fields: [major], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  course_tables_course_tablesTousers     course_tables[]
+  id                                   String          @id
+  name                                 String
+  email                                String
+  student_id                           String?
+  year                                 Int             @default(0)
+  major                                String?
+  d_major                              String?
+  minors                               String[]
+  languages                            String[]
+  favorites                            String[]
+  course_tables                        String[]
+  history_courses                      String[]
+  department_departmentTousers_d_major department?     @relation("departmentTousers_d_major", fields: [d_major], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  department_departmentTousers_major   department?     @relation("departmentTousers_major", fields: [major], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  course_tables_course_tablesTousers   course_tables[]
 
   @@unique([id, email, student_id])
+}
+
+model area {
+  id           String         @id(map: "areas_pkey")
+  code         String
+  name         String
+  course_areas course_areas[]
+
+  @@unique([id, code, name], map: "areas_id_code_name_key")
+}
+
+model college {
+  id         String       @id(map: "colleges_pkey")
+  name       String
+  department department[]
+
+  @@unique([id, name], map: "colleges_id_name_key")
+}
+
+model department {
+  id                              String               @id(map: "departments_pkey")
+  college_id                      String?
+  name_short                      String?
+  name_full                       String
+  name_alt                        String?
+  college                         college?             @relation(fields: [college_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "id")
+  course_departments              course_departments[]
+  users_departmentTousers_d_major users[]              @relation("departmentTousers_d_major")
+  users_departmentTousers_major   users[]              @relation("departmentTousers_major")
+
+  @@unique([id, name_full], map: "departments_id_name_full_key")
+}
+
+model specialty {
+  id                 String               @id(map: "specialties_pkey")
+  name               String
+  course_specialties course_specialties[]
+
+  @@unique([id, name], map: "specialties_id_name_key")
 }
 
 enum course_languages {
