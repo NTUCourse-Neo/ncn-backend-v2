@@ -22,11 +22,7 @@ jobs:
           node-version: '16.x'
 
       - name: npm install, build, and test
-        run: |
-          npm install
-          npm run build --if-present
-          npm run test --if-present
-
+        run: yarn
       - name: zip artifact for deployment
         run: zip -r rel.zip * .babelrc .env.defaults
 
@@ -50,7 +46,9 @@ jobs:
           name: node-app
 
       - name: unzip artifact for deployment
-        run: unzip rel.zip
+        run: |
+          unzip rel.zip
+          yarn
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
