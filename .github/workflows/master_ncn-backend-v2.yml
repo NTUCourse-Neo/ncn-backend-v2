@@ -9,6 +9,9 @@ on:
       - master
   workflow_dispatch:
 
+env:
+  POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
