@@ -27,6 +27,9 @@ jobs:
       - name: npm install, build, and test
         run: yarn
 
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
       - name: zip artifact for deployment
         run: zip -r --symlinks rel.zip ./* .babelrc .env.defaults
 
