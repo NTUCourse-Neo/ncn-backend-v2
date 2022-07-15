@@ -100,7 +100,7 @@ model courses {
   course_rating     course_rating[]
   schedules         course_schedules[]
   specialties       course_specialties[]
-  course_syllabus   course_syllabus[]
+  course_syllabus   course_syllabus?
 }
 
 model users {
@@ -165,7 +165,7 @@ model specialty {
 model course_enrollinfo {
   course_id String
   content   Json?    @db.Json
-  fetch_ts  DateTime @db.Date
+  fetch_ts  DateTime @db.Timestamp(6)
   courses   courses  @relation(fields: [course_id], references: [id], onDelete: NoAction)
 
   @@id([course_id, fetch_ts])
@@ -175,29 +175,26 @@ model course_ptt {
   course_id String
   type      Int
   content   Json?    @db.Json
-  fetch_ts  DateTime @db.Date
+  fetch_ts  DateTime @db.Timestamp(6)
   courses   courses  @relation(fields: [course_id], references: [id], onDelete: NoAction)
 
-  @@id([course_id, type, fetch_ts])
+  @@id([course_id, type])
 }
 
 model course_rating {
   course_id String
   content   Json?    @db.Json
-  fetch_ts  DateTime @db.Date
+  fetch_ts  DateTime @db.Timestamp(6)
   courses   courses  @relation(fields: [course_id], references: [id], onDelete: NoAction)
 
   @@id([course_id, fetch_ts])
 }
 
 model course_syllabus {
-  course_id String
-  syllabus  Json?    @db.Json
-  grade     Json?    @db.Json
-  fetch_ts  DateTime @db.Date
+  course_id String   @id
+  content   Json?    @db.Json
+  fetch_ts  DateTime @db.Timestamp(6)
   courses   courses  @relation(fields: [course_id], references: [id], onDelete: NoAction)
-
-  @@id([course_id, fetch_ts])
 }
 
 enum course_languages {

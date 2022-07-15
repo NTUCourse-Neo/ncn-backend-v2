@@ -2,6 +2,7 @@ import express from "express";
 import search from '../utils/search';
 import collection from "../utils/mongo_client";
 import axios from "axios";
+import { checkJwt } from "../auth";
 import { PrismaClient } from "@prisma/client";
 import { sendWebhookMessage } from "../utils/webhook_client";
 import { course_include_all } from "../prisma/course_query";
@@ -174,37 +175,44 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+
+// Live API below: auth token is required
+
 // API version: 2.0
-router.get('/:id/enrollinfo', async (req, res) => {
+router.get('/:id/enrollinfo', checkJwt, async (req, res) => {
   try{
     const course_id = req.params.id;
     let course_enroll_data;
+    let update_ts;
     const db_data = await prisma.course_enrollinfo.findFirst({
       where: { course_id: { equals: `${process.env.SEMESTER}_${course_id}` } },
       orderBy: { fetch_ts: 'desc' },
     })
     if(!db_data || isExpired(db_data.fetch_ts) ) {
       const url = `${process.env.LIVE_API_ENDPOINT}/api/v1/courses/${course_id}/enrollinfo`;
+      update_ts = new Date();
       try{
         const resp = await axios.get(url);
         course_enroll_data = resp.data.course_status
       }catch(err){
         console.log(err);
-        course_enroll_data = db_data ? db_data.content : null;
+        course_enroll_data = db_data ? db_data.content : {};
       }
       await prisma.course_enrollinfo.create({
         data: {
           course_id: `${process.env.SEMESTER}_${course_id}`,
-          content: course_enroll_data,
-          fetch_ts: new Date()
+          content: course_enroll_data ? course_enroll_data : {},
+          fetch_ts: update_ts
         }
       });
     }else{
       course_enroll_data = db_data.content;
+      update_ts = db_data.fetch_ts;
     }
     res.status(200).send({
       course_id: `${process.env.SEMESTER}_${course_id}`,
       course_status: course_enroll_data,
+      update_ts: update_ts,
       message: "Successfully retrieved course enroll info."
     });
 
@@ -222,23 +230,175 @@ router.get('/:id/enrollinfo', async (req, res) => {
 });
 
 // API version: 2.0
-// TODO
-router.get('/:id/rating', async (req, res) => {
-  const course_id = req.params.id;
+router.get('/:id/rating', checkJwt, async (req, res) => {
+  try{
+    const course_id = req.params.id;
+    let course_rating_data;
+    let update_ts;
+    const db_data = await prisma.course_rating.findFirst({
+      where: { course_id: { equals: course_id } },
+      orderBy: { fetch_ts: 'desc' },
+    })
+    if(!db_data || isExpired(db_data.fetch_ts) ) {
+      const url = `${process.env.LIVE_API_ENDPOINT}/api/v1/courses/${course_id}/rating`;
+      update_ts = new Date();
+      try{
+        const resp = await axios.get(url);
+        course_rating_data = resp.data.course_rating
+      }catch(err){
+        console.log(err);
+        course_rating_data = db_data ? db_data.content : {};
+      }
+      await prisma.course_rating.create({
+        data: {
+          course_id: course_id,
+          content: course_rating_data ? course_rating_data : undefined,
+          fetch_ts: update_ts
+        }
+      });
+    }else{
+      course_rating_data = db_data.content;
+      update_ts = db_data.fetch_ts;
+    }
+    res.status(200).send({
+      course_id: course_id,
+      course_rating: course_rating_data,
+      update_ts: update_ts,
+      message: "Successfully retrieved course rating info."
+    });
 
+  }catch(err){
+    console.log(err);
+    res.status(500).send({message: err});
+    const fields = [
+      {name: "Component", value: "Backend API endpoint"},
+      {name: "Method", value: "GET"},
+      {name: "Route", value: "/courses/:id/rating"},
+      {name: "Error Log", value: "```\n" + err + "\n```"}
+    ];
+    await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
+  }
 });
 
 // API version: 2.0
-// TODO
-router.get('/:id/ptt/:board', async (req, res) => {
-  const course_id = req.params.id;
-  const ptt_board = req.params.board;
+router.get('/:id/ptt/:board', checkJwt, async (req, res) => {
+  try{
+    const course_id = req.params.id;
+    const data_type = req.params.board == "review" ? 0 : 1;
+    let ptt_post_data;
+    let update_ts;
+    const db_data = await prisma.course_ptt.findFirst({
+      where: { course_id: { equals: course_id }, type: { equals: data_type } },
+      orderBy: { fetch_ts: 'desc' },
+    })
+    if(!db_data || isExpired(db_data.fetch_ts) ) {
+      const url = `${process.env.PTT_API_ENDPOINT}/api/v1/courses/${course_id}/ptt/${req.params.board}`;
+      update_ts = new Date();
+      try{
+        const resp = await axios.get(url);
+        ptt_post_data = resp.data.course_rating
+      }catch(err){
+        console.log(err);
+        ptt_post_data = db_data ? db_data.content : {};
+      }
+      await prisma.course_ptt.upsert({
+        where: {
+          course_id_type: {
+            course_id: course_id,
+            type: data_type
+          }  
+        },
+        update: {
+          content: ptt_post_data ? ptt_post_data : {},
+          fetch_ts: update_ts
+        },
+        create: {
+          course_id: course_id,
+          content: ptt_post_data ? ptt_post_data : {},
+          type: data_type,
+          fetch_ts: update_ts
+        }
+      });
+    }else{
+      ptt_post_data = db_data.content;
+      update_ts = db_data.fetch_ts;
+    }
+    res.status(200).send({
+      course_id: course_id,
+      course_rating: ptt_post_data,
+      update_ts: update_ts,
+      message: "Successfully retrieved course ptt post info."
+    });
+
+  }catch(err){
+    console.log(err);
+    res.status(500).send({message: err});
+    const fields = [
+      {name: "Component", value: "Backend API endpoint"},
+      {name: "Method", value: "GET"},
+      {name: "Route", value: "/courses/:id/ptt/:board"},
+      {name: "Error Log", value: "```\n" + err + "\n```"}
+    ];
+    await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
+  }
 });
 
 // API version: 2.0
-// TODO
-router.get('/:id/syllabus', async (req, res) => {
-  const course_id = req.params.id;
+router.get('/:id/syllabus', checkJwt, async (req, res) => {
+  try{
+    const course_id = req.params.id;
+    let syllabus_data;
+    let update_ts;
+    const db_data = await prisma.course_syllabus.findFirst({
+      where: { course_id: { equals: course_id } },
+      orderBy: { fetch_ts: 'desc' },
+    })
+    if(!db_data || isExpired(db_data.fetch_ts) ) {
+      const url = `${process.env.LIVE_API_ENDPOINT}/api/v1/courses/${course_id}/syllabus`;
+      update_ts = new Date();
+      try{
+        const resp = await axios.get(url);
+        syllabus_data = resp.data.course_syllabus
+      }catch(err){
+        console.log(err);
+        syllabus_data = db_data ? db_data.content : {};
+      }
+      await prisma.course_syllabus.upsert({
+        where: {
+          course_id: course_id
+        },
+        update: {
+          content: syllabus_data ? syllabus_data : {},
+          fetch_ts: update_ts
+        },
+        create: {
+          course_id: course_id,
+          content: syllabus_data ? syllabus_data : {},
+          fetch_ts: update_ts
+        }
+      });
+    }else{
+      syllabus_data = db_data.content;
+      update_ts = db_data.fetch_ts;
+    }
+    res.status(200).send({
+      course_id: course_id,
+      course_syllabus: syllabus_data,
+      update_ts: update_ts,
+      message: "Successfully retrieved course syllabus."
+    });
+
+  }catch(err){
+    console.log(err);
+    res.status(500).send({message: err});
+    const fields = [
+      {name: "Component", value: "Backend API endpoint"},
+      {name: "Method", value: "GET"},
+      {name: "Route", value: "/courses/:id/syllabus"},
+      {name: "Error Log", value: "```\n" + err + "\n```"}
+    ];
+    await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
+  }
 });
 
 function isExpired(expire_time){
