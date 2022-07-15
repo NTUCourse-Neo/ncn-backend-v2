@@ -25,7 +25,7 @@ jobs:
         run: yarn
 
       - name: zip artifact for deployment
-        run: zip -r --symlinks rel.zip *
+        run: zip -r --symlinks rel.zip ./* .babelrc .env.defaults
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
