@@ -29,6 +29,7 @@
     "yarn": "^1.22.17"
   },
   "scripts": {
-    "server": "npx nodemon src/server.js --ext js --watch src --exec babel-node"
+    "server": "npx nodemon src/server.js --ext js --watch src --exec babel-node",
+    "azure": "babel-node src/server.js"
   }
 }
