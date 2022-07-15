@@ -25,7 +25,7 @@ jobs:
         run: yarn
 
       - name: zip artifact for deployment
-        run: zip -r --symlinks rel.zip * .babelrc .env.defaults
+        run: zip -r --symlinks rel.zip ./*
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
@@ -46,11 +46,6 @@ jobs:
         with:
           name: node-app
 
-      - name: unzip artifact for deployment
-        run: |
-          unzip rel.zip
-          yarn
-
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
@@ -58,4 +53,4 @@ jobs:
           app-name: 'ncn-backend-v2'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_722A2A51CF5D4C5D972C51B1AFD80655 }}
-          package: .
+          package: rel.zip
