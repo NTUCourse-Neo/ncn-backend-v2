@@ -344,7 +344,7 @@ router.get('/:id/ptt/:board', checkJwt, async (req, res) => {
 });
 
 // API version: 2.0
-router.get('/:id/syllabus', checkJwt, async (req, res) => {
+router.get('/:id/syllabus', async (req, res) => {
   try{
     const course_id = req.params.id;
     let syllabus_data;
