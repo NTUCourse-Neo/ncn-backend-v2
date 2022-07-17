@@ -1,6 +1,5 @@
 import express from 'express';
 import {sendWebhookMessage} from "../utils/webhook_client"
-require('dotenv-defaults').config();
 
 const router = express.Router();
 

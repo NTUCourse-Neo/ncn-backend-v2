@@ -1,8 +1,8 @@
 import jwt from "express-jwt";
 import jwksRsa from "jwks-rsa";
 import dotenv from 'dotenv-defaults';
-
 dotenv.config();
+
 const checkJwt = jwt({
   secret: jwksRsa.expressJwtSecret({
     cache: true,

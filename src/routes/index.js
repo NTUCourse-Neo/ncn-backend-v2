@@ -1,5 +1,4 @@
 import express from 'express';
-require('dotenv-defaults').config();
 
 const router = express.Router();
 
