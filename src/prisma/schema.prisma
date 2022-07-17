@@ -70,55 +70,56 @@ model course_tables {
 }
 
 model courses {
-  id                String                 @id
-  serial            String
-  code              String
-  identifier        String
-  name              String
-  semester          String
-  teacher           String?
-  limitation        String?
-  note              String?
-  cool_url          String?
-  credits           Float?
-  can_be_selective  Boolean
-  is_half_year      Boolean
-  requirement       course_requirements
-  language          course_languages
-  provider          course_providers
-  slot              Int
-  enroll_method     Int
-  intensive_weeks   Int[]
-  departments_raw   String[]
-  class             String?
-  areas             course_areas[]
-  departments       course_departments[]
-  course_enrollinfo course_enrollinfo[]
-  prerequisites     course_prerequisites[] @relation("course_prerequisites_course_idTocourses")
-  prerequisite_of   course_prerequisites[] @relation("course_prerequisites_pre_course_idTocourses")
-  course_ptt        course_ptt[]
-  course_rating     course_rating[]
-  schedules         course_schedules[]
-  specialties       course_specialties[]
-  course_syllabus   course_syllabus?
+  id                  String                 @id
+  serial              String
+  code                String
+  identifier          String
+  name                String
+  semester            String
+  teacher             String?
+  limitation          String?
+  note                String?
+  cool_url            String?
+  credits             Float?
+  can_be_selective    Boolean
+  is_half_year        Boolean
+  requirement         course_requirements
+  language            course_languages
+  provider            course_providers
+  slot                Int
+  enroll_method       Int
+  intensive_weeks     Int[]
+  departments_raw     String[]
+  class               String?
+  unknown_departments String[]
+  areas               course_areas[]
+  departments         course_departments[]
+  course_enrollinfo   course_enrollinfo[]
+  prerequisites       course_prerequisites[] @relation("course_prerequisites_course_idTocourses")
+  prerequisite_of     course_prerequisites[] @relation("course_prerequisites_pre_course_idTocourses")
+  course_ptt          course_ptt[]
+  course_rating       course_rating[]
+  schedules           course_schedules[]
+  specialties         course_specialties[]
+  course_syllabus     course_syllabus?
 }
 
 model users {
-  id                                   String          @id
-  name                                 String
-  email                                String
-  student_id                           String?
-  year                                 Int             @default(0)
-  major                                String?
-  d_major                              String?
-  minors                               String[]
-  languages                            String[]
-  favorites                            String[]
-  course_tables                        String[]
-  history_courses                      String[]
-  department_departmentTousers_d_major department?     @relation("departmentTousers_d_major", fields: [d_major], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  department_departmentTousers_major   department?     @relation("departmentTousers_major", fields: [major], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  course_tables_course_tablesTousers   course_tables[]
+  id                                 String          @id
+  name                               String
+  email                              String
+  student_id                         String?
+  year                               Int             @default(0)
+  major                              String?
+  d_major                            String?
+  minors                             String[]
+  languages                          String[]
+  favorites                          String[]
+  course_tables                      String[]
+  history_courses                    String[]
+  d_major_dept                       department?     @relation("departmentTousers_d_major", fields: [d_major], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  major_dept                         department?     @relation("departmentTousers_major", fields: [major], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  course_tables_course_tablesTousers course_tables[]
 
   @@unique([id, email, student_id])
 }

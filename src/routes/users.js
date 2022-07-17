@@ -23,8 +23,15 @@ router.get('/:id', checkJwt, async (req, res) => {
       res.status(404).send({user: null, message: "User is not registered in Auth0"});
       return;
     }
-    const db_user = await prisma.users.findUnique({ where: { id: user_id } });
+    let db_user = await prisma.users.findUnique({ 
+      where: { id: user_id },
+      include: {
+        major_dept: true,
+        d_major_dept: true,
+      }
+    });
     if(db_user){
+      db_user = await process_user_info(db_user);
       res.status(200).send({user: {db: db_user, auth0: auth0_user}, message: "Successfully get user by id."});
     }else{
       res.status(400).send({user: null, message: "User not found in DB."});
@@ -73,7 +80,7 @@ router.post('/', checkJwt, async (req, res) => {
       res.status(403).send({course_table: null, message: "you are not authorized to get this user data."});
       return;
     }
-    const new_user = await prisma.users.create({
+    let new_user = await prisma.users.create({
       data: {
         id: auth0_user.user_id,
         name: auth0_user.name,
@@ -87,8 +94,13 @@ router.post('/', checkJwt, async (req, res) => {
         favorites:[],
         course_tables: [],
         history_courses: []
+      },
+      include: {
+        major_dept: true,
+        d_major_dept: true,
       }
     });
+    new_user = await process_user_info(new_user);
     res.status(200).send({message: "User created", user: {db: new_user, auth0: auth0_user}});
   }catch(err){
     res.status(500).send({user: null, message: err});
@@ -175,6 +187,10 @@ router.post('/:id/course_table', checkJwt, async (req, res) => {
             course_tables: {
               push: course_table_id
             }
+          },
+          include: {
+            major_dept: true,
+            d_major_dept: true,
           }
         });
       }catch{
@@ -190,6 +206,7 @@ router.post('/:id/course_table', checkJwt, async (req, res) => {
         res.status(500).send({message: "Error in saving user data, restored coursetable data."});
         return;
       }
+      new_db_user = await process_user_info(new_db_user);
       res.status(200).send({message: "Successfully linked course table to user.", user: {db: new_db_user, auth0: auth0_user}});
       return;
     }
@@ -213,7 +230,13 @@ router.patch('/', checkJwt, async (req, res) => {
   const patch_user = req.body.user;
   // Check if user exists
   try {
-    let db_user = await prisma.users.findUnique({ where: { id: user_id } });
+    let db_user = await prisma.users.findUnique({ 
+      where: { id: user_id },
+      include: {
+        major_dept: true,
+        d_major_dept: true,
+      }
+    });
     if(!db_user){
       res.status(404).send({message: "User not found"});
       return;
@@ -241,14 +264,20 @@ router.patch('/', checkJwt, async (req, res) => {
     }
     // No updates.
     if(Object.keys(query).length === 0){
+      db_user = await process_user_info(db_user);
       res.status(200).send({ user:{ db:db_user, auth0: auth0_user}, message: "No update" });
       return;
     }
     // Update user in MongoDB.
     db_user = await prisma.users.update({
       where: { id: user_id },
-      data: query
+      data: query,
+      include: {
+        major_dept: true,
+        d_major_dept: true,
+      }
     });
+    db_user = await process_user_info(db_user);
     res.status(200).send({user:{ db:db_user, auth0: auth0_user}, message: "User updated."});
   } catch (err) {
     res.status(500).send({message: err});
@@ -320,18 +349,73 @@ router.delete("/account", checkJwt, async(req, res) => {
 });
 
 // API version: 2.0
-// TODO
-router.post("/me/favorites", checkJwt, async(req, res) => {
+router.put("/favorites/:course_id", checkJwt, async(req, res) => {
   const user_id = req.user.sub;
-  const course_ids = req.body.course_ids;
+  const course_id = req.params.course_id;
+  const { favorites } = await prisma.users.findUnique({ where: { id: user_id } });
+  if(favorites.includes(course_id)){
+    res.status(400).send({message: "Course is already in favorites."});
+    return;
+  }
+  const course = await prisma.courses.findUnique({ where: { id: course_id } });
+  if(!course){
+    res.status(400).send({message: "Course not found."});
+    return;
+  }
+  let db_user = await prisma.users.update({ 
+    where: { id: user_id },
+    data: {
+      favorites: {
+        push: course_id 
+      }
+    },
+    include: {
+      major_dept: true,
+      d_major_dept: true,
+    }
+  });
+  res.status(200).send({favorites: db_user.favorites, message: "Course added to favorites."});
 });
 
 // API version: 2.0
-// TODO
-router.delete("/me/favorites/:course_id", checkJwt, async(req, res) => {
+router.delete("/favorites/:course_id", checkJwt, async(req, res) => {
   const user_id = req.user.sub;
   const course_id = req.params.course_id;
+  const { favorites } = await prisma.users.findUnique({ where: { id: user_id } });
+  let db_user = await prisma.users.update({
+    where: { id: user_id },
+    data: {
+      favorites: favorites.filter(id => id != course_id)
+    },
+    include: {
+      major_dept: true,
+      d_major_dept: true,
+    }
+  });
+  res.status(200).send({favorites: db_user.favorites, message: "Course removed from favorites."});
 });
 
+
+// utility functions below
+
+async function process_user_info(user) {
+  const replace_keys =["major", "d_major"];
+  for (let i = 0; i < replace_keys.length; i++) {
+    const key = replace_keys[i];
+    if (replace_keys.includes(key)) {
+      user[key] = user[`${key}_dept`];
+      delete user[`${key}_dept`];
+    }
+  }
+  const minor_codes = JSON.parse(JSON.stringify(user.minors))
+  user.minors = await prisma.department.findMany({
+    where: {
+      id: {
+        in: minor_codes
+      }
+    }
+  });
+  return user;
+}
 
 export default router;

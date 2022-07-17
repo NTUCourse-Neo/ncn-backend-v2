@@ -132,7 +132,7 @@ router.patch('/:id', async (req, res) => {
     try{
         let target = await prisma.course_tables.findUnique({ where: { id: _id } });
         if(!target) {
-            res.status(200).send({course_table: null, message: 'Course not found.'});
+            res.status(200).send({course_table: null, message: 'Course table not found.'});
             return
         }
         if(target.expire_ts && (current_ts > target.expire_ts)) {
