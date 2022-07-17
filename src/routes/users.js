@@ -1,11 +1,8 @@
-import dotenv from 'dotenv-defaults';
 import express from "express";
 import * as auth0_client from "../utils/auth0_client";
 import { PrismaClient } from '@prisma/client';
 import { checkJwt } from "../auth";
 import { sendWebhookMessage } from "../utils/webhook_client";
-
-dotenv.config();
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -30,7 +27,7 @@ router.get('/:id', checkJwt, async (req, res) => {
     if(db_user){
       res.status(200).send({user: {db: db_user, auth0: auth0_user}, message: "Successfully get user by id."});
     }else{
-      res.status(200).send({user: null, message: "User not found in DB."});
+      res.status(400).send({user: null, message: "User not found in DB."});
     }
   }
   catch (err) {
@@ -244,7 +241,7 @@ router.patch('/', checkJwt, async (req, res) => {
     }
     // No updates.
     if(Object.keys(query).length === 0){
-      res.status(200).send({message: "No update"});
+      res.status(200).send({ user:{ db:db_user, auth0: auth0_user}, message: "No update" });
       return;
     }
     // Update user in MongoDB.
@@ -276,7 +273,7 @@ router.delete("/profile", checkJwt, async(req, res) => {
       res.status(400).send({message: "User profile data is not in DB."});
       return;
     }
-    await prisma.users.deleteOne({ where: { id: user_id } });
+    await prisma.users.delete({where: {id: user_id}});
     res.status(200).send({message: "Successfully deleted user profile."})
   }catch(err){
     res.status(500).send({message: err});
@@ -306,7 +303,7 @@ router.delete("/account", checkJwt, async(req, res) => {
       res.status(400).send({message: "User is not registered in Auth0"});
       return;
     }
-    await prisma.users.deleteOne({ where: { id: user_id } });
+    await prisma.users.delete({ where: { id: user_id } });
     await auth0_client.delete_user_by_id(user_id, token);
     res.status(200).send({message: "Successfully deleted user account and profile."});
   }catch(err){
