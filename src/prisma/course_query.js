@@ -1,14 +1,8 @@
 const course_include_all = {
   departments: {
     select: {
-      department_id: true,
-      department: {
-        select: {
-          name_full: true,
-          name_short: true,
-        }
-      }
-    }
+      department: true,
+    },
   },
   areas: {
     select: {
@@ -16,9 +10,9 @@ const course_include_all = {
       area: {
         select: {
           name: true,
-        }
-      }
-    }
+        },
+      },
+    },
   },
   specialties: {
     select: {
@@ -26,27 +20,27 @@ const course_include_all = {
       specialty: {
         select: {
           name: true,
-        }
-      }
-    }
+        },
+      },
+    },
   },
   prerequisites: {
     select: {
-      pre_course_id: true
-    }
+      pre_course_id: true,
+    },
   },
   prerequisite_of: {
     select: {
-      course_id: true
-    }
+      course_id: true,
+    },
   },
   schedules: {
     select: {
       weekday: true,
       interval: true,
       location: true,
-    }
-  }
-}
+    },
+  },
+};
 
-export { course_include_all }
+export { course_include_all };
