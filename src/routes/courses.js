@@ -39,60 +39,46 @@ router.get("/", async (req, res) => {
 });
 
 // API version: 2.0
-router.post("/", async (req, res) => {
+router.post("/search", async (req, res) => {
+  const keyword = req.body.keyword;
   const filter = req.body.filter;
   const batch_size = req.body.batch_size;
   const offset = req.body.offset;
 
   try {
-    const conditions = generate_course_filter(filter);
-    const courses = await prisma.courses.findMany({
+    let conditions = generate_course_filter(filter, null);
+    let find_object = {
       where: conditions,
       include: course_include_all,
       skip: offset,
       take: batch_size,
+    };
+    if (keyword && keyword.length !== 0) {
+      console.log("keyword provided.");
+      conditions.AND.push({
+        name: {
+          contains: keyword,
+        },
+      });
+      find_object["orderBy"] = {
+        _relevance: {
+          fields: ["name"],
+          search: keyword,
+          sort: "asc",
+        },
+      };
+    }
+    const courses = await prisma.courses.findMany(find_object);
+    const course_cnt = await prisma.courses.count({
+      where: conditions,
     });
     if (courses) {
       res.status(200).send({
         courses: course_post_process(courses),
-        total_count: courses.length,
+        total_count: course_cnt,
       });
     } else {
       res.status(200).send({ courses: [], total_count: 0 });
-    }
-  } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: err });
-    const fields = [
-      { name: "Component", value: "Backend API endpoint" },
-      { name: "Method", value: "POST" },
-      { name: "Route", value: "/courses/ids" },
-      {
-        name: "Request Body",
-        value: "```\n" + JSON.stringify(req.body) + "\n```",
-      },
-      { name: "Error Log", value: "```\n" + err + "\n```" },
-    ];
-    await sendWebhookMessage("error", "Error occurred in ncn-backend.", fields);
-  }
-});
-
-// API version: 2.0
-router.post("/search", async (req, res) => {
-  const query = req.body.query;
-  const paths = req.body.paths;
-
-  try {
-    if (query === "" || !query) {
-      // if query is empty, return all courses
-      const courses_pack = await prisma.courses.findMany({
-        select: { id: true },
-      });
-      let result = courses_pack.map((a) => a.id);
-      res.status(200).send({ ids: result });
-    } else {
-      const result = await search(query, paths, collection);
-      res.status(200).send({ ids: result });
     }
   } catch (err) {
     res.status(500).send({ message: "Internal Server Error", log: err });
@@ -137,10 +123,13 @@ router.post("/ids", async (req, res) => {
       skip: offset,
       take: batch_size,
     });
+    const course_cnt = await prisma.courses.count({
+      where: conditions,
+    });
     if (courses) {
       res.status(200).send({
         courses: course_post_process(courses),
-        total_count: courses.length,
+        total_count: course_cnt,
       });
     } else {
       res.status(200).send({ courses: [], total_count: 0 });
