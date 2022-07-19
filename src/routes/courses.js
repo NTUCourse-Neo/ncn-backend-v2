@@ -99,11 +99,7 @@ router.post("/search", async (req, res) => {
 
 // API version: 2.0
 router.post("/ids", async (req, res) => {
-  const ids = req.body.ids;
-  const filter = req.body.filter;
-  const batch_size = req.body.batch_size;
-  const offset = req.body.offset;
-
+  const { ids } = req.body;
   if (ids.length === 0) {
     console.log("No ids provided.");
     res.status(200).send({ courses: [], total_count: 0 });
@@ -116,24 +112,21 @@ router.post("/ids", async (req, res) => {
     return;
   }
   try {
-    const conditions = generate_course_filter(filter, ids);
     const courses = await prisma.courses.findMany({
-      where: conditions,
-      include: course_include_all,
-      skip: offset,
-      take: batch_size,
-    });
-    const course_cnt = await prisma.courses.count({
-      where: conditions,
+      where: {
+        id: {
+          in: ids,
+        }
+      },
+      include: course_include_all
     });
     if (courses) {
-      const courseObjects = course_post_process(courses);
-      const coursesSortByIds = ids.map((id) =>
-        courseObjects.find((course) => course.id === id)
+      const sortedCourses = ids.map((id) =>
+        courses.find((course) => course.id === id)
       );
       res.status(200).send({
-        courses: coursesSortByIds,
-        total_count: course_cnt,
+        courses: course_post_process(sortedCourses),
+        total_count: sortedCourses.length,
       });
     } else {
       res.status(200).send({ courses: [], total_count: 0 });
