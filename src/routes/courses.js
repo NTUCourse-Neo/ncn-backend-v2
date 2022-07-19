@@ -1,6 +1,4 @@
 import express from "express";
-import search from "../utils/search";
-import collection from "../utils/mongo_client";
 import axios from "axios";
 import { checkJwt } from "../auth";
 import { PrismaClient } from "@prisma/client";
@@ -40,11 +38,12 @@ router.get("/", async (req, res) => {
 
 // API version: 2.0
 router.post("/search", async (req, res) => {
-  const keyword = req.body.keyword;
-  const filter = req.body.filter;
-  const batch_size = req.body.batch_size;
-  const offset = req.body.offset;
-
+  const { keyword, fields, filter, batch_size, offset } = req.body;
+  const valid_keyword_fields = ["name", "teacher", "serial", "code", "identifier"];
+  if(!fields || fields.map((field) => valid_keyword_fields.includes(field)).includes(false)) {
+    res.status(400).send({ message: "Invalid keyword fields." });
+    return;
+  }
   try {
     let conditions = generate_course_filter(filter, null);
     let find_object = {
@@ -54,19 +53,18 @@ router.post("/search", async (req, res) => {
       take: batch_size,
     };
     if (keyword && keyword.length !== 0) {
-      console.log("keyword provided.");
-      conditions.AND.push({
-        name: {
-          contains: keyword,
-        },
+      console.log(`Search "${keyword}" in fields: ${fields.join(", ")}`);
+      const search_conditions = [];
+      fields.forEach((field) => {
+        search_conditions.push({
+          [field]: {
+            contains: keyword,
+          },
+        });
       });
-      find_object["orderBy"] = {
-        _relevance: {
-          fields: ["name"],
-          search: keyword,
-          sort: "asc",
-        },
-      };
+      conditions.AND.push({
+        OR: search_conditions,
+      });
     }
     const courses = await prisma.courses.findMany(find_object);
     const course_cnt = await prisma.courses.count({
