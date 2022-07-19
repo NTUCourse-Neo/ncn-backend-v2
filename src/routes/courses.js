@@ -127,8 +127,12 @@ router.post("/ids", async (req, res) => {
       where: conditions,
     });
     if (courses) {
+      const courseObjects = course_post_process(courses);
+      const coursesSortByIds = ids.map((id) =>
+        courseObjects.find((course) => course.id === id)
+      );
       res.status(200).send({
-        courses: course_post_process(courses),
+        courses: coursesSortByIds,
         total_count: course_cnt,
       });
     } else {
