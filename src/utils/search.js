@@ -1,11 +1,11 @@
-async function search(query, paths = ['course_name', 'teacher'], collection) {
+async function search(query, paths = ["course_name", "teacher"], collection) {
   try {
-    console.log('Start searching...');
+    console.log("Start searching...");
     let objArray = await collection
       .aggregate([
         {
           $search: {
-            index: 'default',
+            index: "default",
             text: {
               query: `${query}`,
               path: paths,
@@ -16,7 +16,7 @@ async function search(query, paths = ['course_name', 'teacher'], collection) {
         { $project: { _id: 1 } },
       ])
       .toArray();
-    let result = objArray.map(a => a._id);
+    let result = objArray.map((a) => a._id);
     return result;
   } catch (err) {
     console.log(err);
