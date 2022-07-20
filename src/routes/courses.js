@@ -3,7 +3,7 @@ import axios from "axios";
 import { checkJwt } from "../auth";
 import { PrismaClient } from "@prisma/client";
 import { sendWebhookMessage } from "../utils/webhook_client";
-import { course_include_all } from "../prisma/course_query";
+import { course_include_all, course_post_process, generate_course_filter, getCoursesbyIds } from "../prisma/course_query";
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -97,7 +97,7 @@ router.post("/search", async (req, res) => {
 
 // API version: 2.0
 router.post("/ids", async (req, res) => {
-  const { ids } = req.body;
+  const { ids, sorted } = req.body;
   if (ids.length === 0) {
     console.log("No ids provided.");
     res.status(200).send({ courses: [], total_count: 0 });
@@ -110,25 +110,8 @@ router.post("/ids", async (req, res) => {
     return;
   }
   try {
-    const courses = await prisma.courses.findMany({
-      where: {
-        id: {
-          in: ids,
-        }
-      },
-      include: course_include_all
-    });
-    if (courses) {
-      const sortedCourses = ids.map((id) =>
-        courses.find((course) => course.id === id)
-      );
-      res.status(200).send({
-        courses: course_post_process(sortedCourses),
-        total_count: sortedCourses.length,
-      });
-    } else {
-      res.status(200).send({ courses: [], total_count: 0 });
-    }
+    const courses = await getCoursesbyIds(ids, sorted == null ? true : sorted);
+    res.status(200).send({ courses: course_post_process(courses), total_count: courses.length });
   } catch (err) {
     console.error(err);
     res.status(500).send({ message: err });
@@ -187,7 +170,7 @@ router.get("/:id/enrollinfo", checkJwt, async (req, res) => {
       where: { course_id: { equals: `${process.env.SEMESTER}_${course_id}` } },
       orderBy: { fetch_ts: "desc" },
     });
-    if (!db_data || isExpired(db_data.fetch_ts)) {
+    if (!db_data || liveDataisExpired(db_data.fetch_ts)) {
       const url = `${process.env.LIVE_API_ENDPOINT}/api/v1/courses/${course_id}/enrollinfo`;
       update_ts = new Date();
       try {
@@ -237,7 +220,7 @@ router.get("/:id/rating", checkJwt, async (req, res) => {
       where: { course_id: { equals: course_id } },
       orderBy: { fetch_ts: "desc" },
     });
-    if (!db_data || isExpired(db_data.fetch_ts)) {
+    if (!db_data || liveDataisExpired(db_data.fetch_ts)) {
       const url = `${process.env.LIVE_API_ENDPOINT}/api/v1/courses/${course_id}/rating`;
       update_ts = new Date();
       try {
@@ -288,7 +271,7 @@ router.get("/:id/ptt/:board", checkJwt, async (req, res) => {
       where: { course_id: { equals: course_id }, type: { equals: data_type } },
       orderBy: { fetch_ts: "desc" },
     });
-    if (!db_data || isExpired(db_data.fetch_ts)) {
+    if (!db_data || liveDataisExpired(db_data.fetch_ts)) {
       const url = `${process.env.PTT_API_ENDPOINT}/api/v1/courses/${course_id}/ptt/${req.params.board}`;
       update_ts = new Date();
       try {
@@ -349,7 +332,7 @@ router.get("/:id/syllabus", async (req, res) => {
       where: { course_id: { equals: course_id } },
       orderBy: { fetch_ts: "desc" },
     });
-    if (!db_data || isExpired(db_data.fetch_ts)) {
+    if (!db_data || liveDataisExpired(db_data.fetch_ts)) {
       const url = `${process.env.LIVE_API_ENDPOINT}/api/v1/courses/${course_id}/syllabus`;
       update_ts = new Date();
       try {
@@ -396,94 +379,12 @@ router.get("/:id/syllabus", async (req, res) => {
   }
 });
 
-function isExpired(expire_time) {
+function liveDataisExpired(expire_time) {
   const now = new Date();
   expire_time.setSeconds(
     expire_time.getSeconds() + Number(process.env.LIVE_DATA_RENEW_INTERVAL)
   );
   return now > expire_time;
-}
-
-function generate_course_filter(filter, ids = null) {
-  const strict_match = filter.strict_match;
-  const time = filter.time;
-  const department = filter.department;
-  const area = filter.category;
-  const enroll_method = filter.enroll_method;
-  let filters = [];
-  if (time) {
-    let schedules = { OR: [] };
-    time.forEach((intervals, index) => {
-      if (intervals.length !== 0) {
-        schedules.OR.push({
-          schedules: {
-            some: {
-              weekday: { equals: index + 1 },
-              interval: { in: intervals },
-            },
-          },
-        });
-      }
-      filters.push(schedules);
-    });
-  }
-  if (department) {
-    filters.push({
-      departments: {
-        some: {
-          department_id: { in: department },
-        },
-      },
-    });
-  }
-  if (area) {
-    filters.push({
-      areas: {
-        some: {
-          area_id: { in: area },
-        },
-      },
-    });
-  }
-
-  let where_condition = { AND: [] };
-  if (ids) {
-    where_condition.AND.push({
-      id: { in: ids },
-    });
-  }
-  if (enroll_method) {
-    where_condition.AND.push({
-      enroll_method: {
-        in: enroll_method.map((method) => Number(method)),
-      },
-    });
-  }
-  if (strict_match) {
-    where_condition.AND.push({ AND: filters });
-  } else {
-    where_condition.AND.push({ OR: filters });
-  }
-  return where_condition;
-}
-
-function course_post_process(courses) {
-  courses.forEach((course) => {
-    course.departments = course.departments.map((d) => {
-      return d.department;
-    });
-    course.departments_raw.forEach((name) => {
-      course.departments.push({
-        id: null,
-        college_id: null,
-        name_short: null,
-        name_full: name,
-        name_alt: null,
-      });
-    });
-    delete course.departments_raw;
-  });
-  return courses;
 }
 
 export default router;
