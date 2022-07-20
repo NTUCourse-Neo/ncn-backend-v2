@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { sendWebhookMessage } from "../utils/webhook_client";
 import { checkJwt } from "../auth";
 import * as auth0_client from "../utils/auth0_client";
+import { getCoursesbyIds } from "../prisma/course_query";
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -67,6 +68,7 @@ router.get("/:id", async (req, res) => {
         .status(403)
         .send({ course_table: null, message: "this course table is expired" });
     } else {
+      result.courses = await getCoursesbyIds(result.courses, true);
       res
         .status(200)
         .send({ course_table: result, message: "get course table" });
@@ -164,6 +166,7 @@ router.patch("/:id", async (req, res) => {
         .send({ course_table: null, message: "Course table is expired" });
       return;
     }
+    let new_table;
     if (user_id) {
       if (target.user_id && target.user_id !== user_id) {
         res.status(403).send({
@@ -172,7 +175,7 @@ router.patch("/:id", async (req, res) => {
         });
         return;
       }
-      const new_table = await prisma.course_tables.update({
+      new_table = await prisma.course_tables.update({
         where: { id: _id },
         data: {
           name: name,
@@ -181,23 +184,20 @@ router.patch("/:id", async (req, res) => {
           expire_ts: null,
         },
       });
-      res.status(200).send({
-        course_table: new_table,
-        message: "Course table has been patched",
-      });
     } else if (!user_id) {
-      const new_table = await prisma.course_tables.update({
+      new_table = await prisma.course_tables.update({
         where: { id: _id },
         data: {
           name: name,
           courses: courses,
         },
       });
-      res.status(200).send({
-        course_table: new_table,
-        message: "Course table has been patched",
-      });
     }
+    new_table.courses = await getCoursesbyIds(new_table.courses, true);;
+    res.status(200).send({
+      course_table: new_table,
+      message: "Course table has been patched",
+    });
   } catch (err) {
     res.status(500).send({ course_table: null, message: err });
     const fields = [

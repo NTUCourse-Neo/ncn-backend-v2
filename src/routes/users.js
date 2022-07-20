@@ -3,6 +3,7 @@ import * as auth0_client from "../utils/auth0_client";
 import { PrismaClient } from "@prisma/client";
 import { checkJwt } from "../auth";
 import { sendWebhookMessage } from "../utils/webhook_client";
+import { getCoursesbyIds } from "../prisma/course_query";
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -419,7 +420,7 @@ router.delete("/account", checkJwt, async (req, res) => {
 router.put("/favorites/:course_id", checkJwt, async (req, res) => {
   const user_id = req.user.sub;
   const course_id = req.params.course_id;
-  const { favorites } = await prisma.users.findUnique({
+  let { favorites } = await prisma.users.findUnique({
     where: { id: user_id },
   });
   if (favorites.includes(course_id)) {
@@ -431,7 +432,7 @@ router.put("/favorites/:course_id", checkJwt, async (req, res) => {
     res.status(400).send({ message: "Course not found." });
     return;
   }
-  let db_user = await prisma.users.update({
+  ({ favorites } = await prisma.users.update({
     where: { id: user_id },
     data: {
       favorites: {
@@ -442,9 +443,10 @@ router.put("/favorites/:course_id", checkJwt, async (req, res) => {
       major_dept: true,
       d_major_dept: true,
     },
-  });
+  }));
+  favorites = await getCoursesbyIds(favorites, false);
   res.status(200).send({
-    favorites: db_user.favorites,
+    favorites: favorites,
     message: "Course added to favorites.",
   });
 });
@@ -453,10 +455,10 @@ router.put("/favorites/:course_id", checkJwt, async (req, res) => {
 router.delete("/favorites/:course_id", checkJwt, async (req, res) => {
   const user_id = req.user.sub;
   const course_id = req.params.course_id;
-  const { favorites } = await prisma.users.findUnique({
+  let { favorites } = await prisma.users.findUnique({
     where: { id: user_id },
   });
-  let db_user = await prisma.users.update({
+  ({ favorites } = await prisma.users.update({
     where: { id: user_id },
     data: {
       favorites: favorites.filter((id) => id != course_id),
@@ -465,9 +467,10 @@ router.delete("/favorites/:course_id", checkJwt, async (req, res) => {
       major_dept: true,
       d_major_dept: true,
     },
-  });
+  }));
+  favorites = await getCoursesbyIds(favorites, false);
   res.status(200).send({
-    favorites: db_user.favorites,
+    favorites: favorites,
     message: "Course removed from favorites.",
   });
 });
@@ -491,6 +494,7 @@ async function process_user_info(user) {
       },
     },
   });
+  user.favorites = await getCoursesbyIds(user.favorites, false);
   return user;
 }
 
