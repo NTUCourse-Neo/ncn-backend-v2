@@ -161,6 +161,7 @@ router.patch("/:id", async (req, res) => {
   const user_id = req.body.user_id;
   const courses = req.body.courses;
   const current_ts = new Date();
+  
   try {
     let target = await prisma.course_tables.findUnique({ where: { id: _id } });
     if (!target) {
@@ -172,6 +173,12 @@ router.patch("/:id", async (req, res) => {
     if(target.semester != active_semester) {
       res.status(403).send({ message: "Course table semester is not active semester." });
       return;
+    }
+    for(let i = 0; i < courses.length; i++) {
+      if(courses[i].substr(0, 4) != target.semester){
+        res.status(403).send({ message: "Course table semester does not match course table semester." });
+        return;
+      }
     }
     if (target.expire_ts && current_ts > target.expire_ts) {
       res
