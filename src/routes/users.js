@@ -20,14 +20,6 @@ router.get("/:id", checkJwt, async (req, res) => {
     return;
   }
   try {
-    const token = await auth0_client.get_token();
-    const auth0_user = await auth0_client.get_user_by_id(user_id, token);
-    if (!auth0_user) {
-      res
-        .status(404)
-        .send({ user: null, message: "User is not registered in Auth0" });
-      return;
-    }
     let db_user = await prisma.users.findUnique({
       where: { id: user_id },
       include: {
@@ -38,7 +30,7 @@ router.get("/:id", checkJwt, async (req, res) => {
     if (db_user) {
       db_user = await process_user_info(db_user);
       res.status(200).send({
-        user: { db: db_user, auth0: auth0_user },
+        user: { db: db_user },
         message: "Successfully get user by id.",
       });
     } else {
@@ -62,6 +54,7 @@ router.get("/:id", checkJwt, async (req, res) => {
 });
 
 // API version: 2.0
+// Checks Auth0 user instance.
 router.post("/", checkJwt, async (req, res) => {
   const email = req.body.user.email;
   const token_sub = req.user.sub;
@@ -118,7 +111,7 @@ router.post("/", checkJwt, async (req, res) => {
     new_user = await process_user_info(new_user);
     res.status(200).send({
       message: "User created",
-      user: { db: new_user, auth0: auth0_user },
+      user: { db: new_user },
     });
   } catch (err) {
     console.log(err);
@@ -157,13 +150,6 @@ router.post("/:id/course_table", checkJwt, async (req, res) => {
       });
       return;
     } else {
-      const token = await auth0_client.get_token();
-      const auth0_user = await auth0_client.get_user_by_id(user_id, token);
-      // Check if user is registered in Auth0
-      if (!auth0_user) {
-        res.status(400).send({ message: "User is not registered" });
-        return;
-      }
       // Check if user is registered in MongoDB
       const db_user = await prisma.users.findUnique({ where: { id: user_id } });
       if (!db_user) {
@@ -252,7 +238,7 @@ router.post("/:id/course_table", checkJwt, async (req, res) => {
       new_db_user = await process_user_info(new_db_user);
       res.status(200).send({
         message: "Successfully linked course table to user.",
-        user: { db: new_db_user, auth0: auth0_user },
+        user: { db: new_db_user },
       });
       return;
     }
@@ -290,13 +276,6 @@ router.patch("/", checkJwt, async (req, res) => {
       res.status(404).send({ message: "User not found" });
       return;
     }
-    // Check if user is registered in Auth0
-    const token = await auth0_client.get_token();
-    const auth0_user = await auth0_client.get_user_by_id(user_id, token);
-    if (!auth0_user) {
-      res.status(404).send({ message: "User is not registered in Auth0" });
-      return;
-    }
     // Check each field and update if necessary.
     let query = {};
     for (let key in patch_user) {
@@ -317,7 +296,7 @@ router.patch("/", checkJwt, async (req, res) => {
     if (Object.keys(query).length === 0) {
       db_user = await process_user_info(db_user);
       res.status(200).send({
-        user: { db: db_user, auth0: auth0_user },
+        user: { db: db_user },
         message: "No update",
       });
       return;
@@ -333,7 +312,7 @@ router.patch("/", checkJwt, async (req, res) => {
     });
     db_user = await process_user_info(db_user);
     res.status(200).send({
-      user: { db: db_user, auth0: auth0_user },
+      user: { db: db_user },
       message: "User updated.",
     });
   } catch (err) {
@@ -381,6 +360,7 @@ router.delete("/profile", checkJwt, async (req, res) => {
 });
 
 // API version: 2.0
+// Checks Auth0 user instance.
 router.delete("/account", checkJwt, async (req, res) => {
   try {
     const user_id = req.user.sub;
