@@ -7,6 +7,7 @@ import { getCoursesbyIds } from "../prisma/course_query";
 
 const prisma = new PrismaClient();
 const router = express.Router();
+const active_semester = process.env.SEMESTER;
 
 const check_is_admin = async (user_id) => {
   const token = await auth0_client.get_token();
@@ -61,6 +62,10 @@ router.get("/:id", async (req, res) => {
       res.status(404).send({ message: "Course table not found." });
       return;
     }
+    if(result.semester != active_semester) {
+      res.status(403).send({ message: "Course table semester is not active semester." });
+      return;
+    }
     let user_id = result.user_id;
     let expire_time = result.expire_ts;
     if (!user_id && new Date() > expire_time) {
@@ -97,6 +102,10 @@ router.post("/", async (req, res) => {
   const course_table_name = req.body.name;
   const user_id = req.body.user_id;
   const semester = req.body.semester;
+  if (!semester || semester != active_semester) {
+    res.status(403).send({ message: "Semester is not active semester." });
+    return;
+  }
 
   let existing;
 
@@ -152,6 +161,7 @@ router.patch("/:id", async (req, res) => {
   const user_id = req.body.user_id;
   const courses = req.body.courses;
   const current_ts = new Date();
+  
   try {
     let target = await prisma.course_tables.findUnique({ where: { id: _id } });
     if (!target) {
@@ -159,6 +169,16 @@ router.patch("/:id", async (req, res) => {
         .status(200)
         .send({ course_table: null, message: "Course table not found." });
       return;
+    }
+    if(target.semester != active_semester) {
+      res.status(403).send({ message: "Course table semester is not active semester." });
+      return;
+    }
+    for(let i = 0; i < courses.length; i++) {
+      if(courses[i].substr(0, 4) != target.semester){
+        res.status(403).send({ message: "Course table semester does not match course table semester." });
+        return;
+      }
     }
     if (target.expire_ts && current_ts > target.expire_ts) {
       res
