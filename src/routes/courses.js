@@ -40,6 +40,7 @@ router.get("/", async (req, res) => {
 router.post("/search", async (req, res) => {
   const { keyword, fields, filter, batch_size, offset } = req.body;
   const valid_keyword_fields = ["name", "teacher", "serial", "code", "identifier"];
+  const active_semester = process.env.SEMESTER
   if(!fields || fields.map((field) => valid_keyword_fields.includes(field)).includes(false)) {
     res.status(400).send({ message: "Invalid keyword fields." });
     return;
@@ -66,6 +67,11 @@ router.post("/search", async (req, res) => {
         OR: search_conditions,
       });
     }
+    conditions.AND.push({
+      semester: {
+        equals: active_semester,
+      },
+    });
     const courses = await prisma.courses.findMany(find_object);
     const course_cnt = await prisma.courses.count({
       where: conditions,
