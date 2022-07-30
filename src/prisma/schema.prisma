@@ -91,6 +91,7 @@ model courses {
   intensive_weeks   Int[]
   departments_raw   String[]
   class             String?
+  syllabus_url      String?
   areas             course_areas[]
   departments       course_departments[]
   course_enrollinfo course_enrollinfo[]
