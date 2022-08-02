@@ -98,7 +98,6 @@ router.post("/", checkJwt, async (req, res) => {
         major: null,
         d_major: null,
         minors: [],
-        languages: [],
         favorites: [],
         course_tables: [],
         history_courses: [],
