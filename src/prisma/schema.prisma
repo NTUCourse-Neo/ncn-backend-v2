@@ -63,7 +63,7 @@ model course_tables {
   id        String    @id
   name      String
   user_id   String?
-  semester  String?
+  semester  String
   courses   String[]
   expire_ts DateTime? @db.Timestamp(6)
   users     users?    @relation(fields: [user_id], references: [id], onUpdate: Restrict)
@@ -71,7 +71,7 @@ model course_tables {
 
 model courses {
   id                String                 @id
-  serial            String
+  serial            String?
   code              String
   identifier        String
   name              String
@@ -113,7 +113,6 @@ model users {
   major                              String?
   d_major                            String?
   minors                             String[]
-  languages                          String[]
   favorites                          String[]
   course_tables                      String[]
   history_courses                    String[]
@@ -199,8 +198,8 @@ model course_syllabus {
 }
 
 enum course_languages {
-  zh_TW  @map("zh-TW")
-  en_US  @map("en-US")
+  zh_TW @map("zh-TW")
+  en_US @map("en-US")
 }
 
 enum course_providers {
