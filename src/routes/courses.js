@@ -1,7 +1,7 @@
 import express from "express";
 import axios from "axios";
 import { checkJwt } from "../auth";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { sendWebhookMessage } from "../utils/webhook_client";
 import { course_include_all, course_post_process, generate_course_filter, getCoursesbyIds } from "../prisma/course_query";
 
@@ -189,7 +189,7 @@ router.get("/:id/enrollinfo", checkJwt, async (req, res) => {
       await prisma.course_enrollinfo.create({
         data: {
           course_id: `${process.env.SEMESTER}_${course_id}`,
-          content: course_enroll_data ?? undefined,
+          content: course_enroll_data ?? Prisma.DbNull,
           fetch_ts: update_ts,
         },
       });
@@ -239,7 +239,7 @@ router.get("/:id/rating", checkJwt, async (req, res) => {
       await prisma.course_rating.create({
         data: {
           course_id: course_id,
-          content: course_rating_data ?? undefined,
+          content: course_rating_data ?? Prisma.DbNull,
           fetch_ts: update_ts,
         },
       });
@@ -295,12 +295,12 @@ router.get("/:id/ptt/:board", checkJwt, async (req, res) => {
           },
         },
         update: {
-          content: ptt_post_data ?? undefined,
+          content: ptt_post_data ?? Prisma.DbNull,
           fetch_ts: update_ts,
         },
         create: {
           course_id: course_id,
-          content: ptt_post_data ?? undefined,
+          content: ptt_post_data ?? Prisma.DbNull,
           type: data_type,
           fetch_ts: update_ts,
         },
@@ -353,12 +353,12 @@ router.get("/:id/syllabus", async (req, res) => {
           course_id: course_id,
         },
         update: {
-          content: syllabus_data ?? undefined,
+          content: syllabus_data ?? Prisma.DbNull,
           fetch_ts: update_ts,
         },
         create: {
           course_id: course_id,
-          content: syllabus_data ?? undefined,
+          content: syllabus_data ?? Prisma.DbNull,
           fetch_ts: update_ts,
         },
       });
