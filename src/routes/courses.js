@@ -184,7 +184,7 @@ router.get("/:id/enrollinfo", checkJwt, async (req, res) => {
         course_enroll_data = resp.data.course_status;
       } catch (err) {
         console.log(err);
-        course_enroll_data = db_data?.content;
+        course_enroll_data = db_data?.content ?? null;
       }
       await prisma.course_enrollinfo.create({
         data: {
@@ -234,7 +234,7 @@ router.get("/:id/rating", checkJwt, async (req, res) => {
         course_rating_data = resp.data.course_rating;
       } catch (err) {
         console.log(err);
-        course_rating_data = db_data?.content;
+        course_rating_data = db_data?.content ?? null;
       }
       await prisma.course_rating.create({
         data: {
@@ -285,7 +285,7 @@ router.get("/:id/ptt/:board", checkJwt, async (req, res) => {
         ptt_post_data = resp.data.course_rating;
       } catch (err) {
         console.log(err);
-        ptt_post_data = db_data?.content;
+        ptt_post_data = db_data?.content ?? null;
       }
       await prisma.course_ptt.upsert({
         where: {
@@ -346,7 +346,7 @@ router.get("/:id/syllabus", async (req, res) => {
         syllabus_data = resp.data.course_syllabus;
       } catch (err) {
         console.log(err);
-        syllabus_data = db_data?.content;
+        syllabus_data = db_data?.content ?? null;
       }
       await prisma.course_syllabus.upsert({
         where: {
