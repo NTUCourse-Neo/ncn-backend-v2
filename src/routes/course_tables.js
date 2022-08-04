@@ -62,8 +62,10 @@ router.get("/:id", async (req, res) => {
       res.status(404).send({ message: "Course table not found." });
       return;
     }
-    if(result.semester != active_semester) {
-      res.status(403).send({ message: "Course table semester is not active semester." });
+    if (result.semester != active_semester) {
+      res
+        .status(403)
+        .send({ message: "Course table semester is not active semester." });
       return;
     }
     let user_id = result.user_id;
@@ -161,22 +163,27 @@ router.patch("/:id", async (req, res) => {
   const user_id = req.body.user_id;
   const courses = req.body.courses;
   const current_ts = new Date();
-  
+
   try {
     let target = await prisma.course_tables.findUnique({ where: { id: _id } });
     if (!target) {
       res
-        .status(200)
+        .status(404)
         .send({ course_table: null, message: "Course table not found." });
       return;
     }
-    if(target.semester != active_semester) {
-      res.status(403).send({ message: "Course table semester is not active semester." });
+    if (target.semester != active_semester) {
+      res
+        .status(403)
+        .send({ message: "Course table semester is not active semester." });
       return;
     }
-    for(let i = 0; i < courses.length; i++) {
-      if(courses[i].substr(0, 4) != target.semester){
-        res.status(403).send({ message: "Course table semester does not match course table semester." });
+    for (let i = 0; i < courses.length; i++) {
+      if (courses[i].substr(0, 4) != target.semester) {
+        res.status(403).send({
+          message:
+            "Course table semester does not match course table semester.",
+        });
         return;
       }
     }
@@ -213,7 +220,7 @@ router.patch("/:id", async (req, res) => {
         },
       });
     }
-    new_table.courses = await getCoursesbyIds(new_table.courses, true);;
+    new_table.courses = await getCoursesbyIds(new_table.courses, true);
     res.status(200).send({
       course_table: new_table,
       message: "Course table has been patched",
