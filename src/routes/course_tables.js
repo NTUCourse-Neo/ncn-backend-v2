@@ -1,11 +1,10 @@
 import express from "express";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../../prisma";
 import { sendWebhookMessage } from "../utils/webhook_client";
 import { checkJwt } from "../auth";
 import * as auth0_client from "../utils/auth0_client";
-import { getCoursesbyIds } from "../prisma/course_query";
+import { getCoursesbyIds } from "../queries/courses";
 
-const prisma = new PrismaClient();
 const router = express.Router();
 const active_semester = process.env.SEMESTER;
 

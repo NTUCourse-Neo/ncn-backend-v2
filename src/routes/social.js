@@ -1,14 +1,13 @@
 import express from "express";
 import Social_posts from "../models/Social_posts";
 import Post_reports from "../models/Post_reports";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../../prisma";
 import { sendWebhookMessage } from "../utils/webhook_client";
 import { checkJwt } from "../auth";
 import { v4 as uuidv4 } from "uuid";
 
 // route: "/api/v1/social"
 const router = express.Router();
-const prisma = new PrismaClient();
 
 const get_self_vote_status = (post, user_id) => {
   if (post.upvotes.includes(user_id)) {

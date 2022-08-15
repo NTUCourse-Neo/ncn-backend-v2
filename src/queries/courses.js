@@ -1,16 +1,15 @@
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import prisma from "../../prisma";
 
 const course_include_all = {
   departments: {
     select: {
-      department: true,
+      departments: true,
     },
   },
   areas: {
     select: {
       area_id: true,
-      area: {
+      areas: {
         select: {
           name: true,
         },
@@ -20,7 +19,7 @@ const course_include_all = {
   specialties: {
     select: {
       specialty_id: true,
-      specialty: {
+      specialties: {
         select: {
           name: true,
         },

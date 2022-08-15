@@ -1,0 +1,192 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URL")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model course_areas {
+  course_id String
+  area_id   String
+  areas     areas   @relation(fields: [area_id], references: [id])
+  courses   courses @relation(fields: [course_id], references: [id], onDelete: Cascade)
+
+  @@id([course_id, area_id])
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model course_departments {
+  course_id     String
+  department_id String
+  courses       courses     @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  departments   departments @relation(fields: [department_id], references: [id])
+
+  @@id([course_id, department_id])
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model course_prerequisites {
+  course_id                                           String
+  pre_course_id                                       String
+  courses_course_prerequisites_course_idTocourses     courses @relation("course_prerequisites_course_idTocourses", fields: [course_id], references: [id], onDelete: Cascade)
+  courses_course_prerequisites_pre_course_idTocourses courses @relation("course_prerequisites_pre_course_idTocourses", fields: [pre_course_id], references: [id])
+
+  @@id([course_id, pre_course_id])
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model course_schedules {
+  course_id String
+  weekday   Int
+  interval  String
+  location  String
+  courses   courses @relation(fields: [course_id], references: [id], onDelete: Cascade)
+
+  @@id([course_id, weekday, interval, location])
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model course_specialties {
+  course_id    String
+  specialty_id String
+  courses      courses     @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  specialties  specialties @relation(fields: [specialty_id], references: [id])
+
+  @@id([course_id, specialty_id])
+}
+
+model course_tables {
+  id            String          @id
+  name          String
+  user_id       String?
+  semester      String?
+  courses       String[]
+  expire_ts     DateTime?       @db.Timestamp(6)
+  users         users?          @relation(fields: [user_id], references: [id], onUpdate: Restrict)
+  table_courses table_courses[]
+}
+
+model courses {
+  id               String                 @id
+  serial           String
+  code             String
+  identifier       String
+  name             String
+  semester         String
+  teacher          String?
+  limitation       String?
+  note             String?
+  cool_url         String?
+  credits          Float?
+  can_be_selective Boolean
+  is_half_year     Boolean
+  requirement      course_requirements
+  language         course_languages
+  provider         course_providers
+  slot             Int
+  enroll_method    Int
+  intensive_weeks  Int[]
+  departments_raw  String[]
+  class            String?
+  areas            course_areas[]
+  departments      course_departments[]
+  prerequisites    course_prerequisites[] @relation("course_prerequisites_course_idTocourses")
+  prerequisite_of  course_prerequisites[] @relation("course_prerequisites_pre_course_idTocourses")
+  schedules        course_schedules[]
+  specialties      course_specialties[]
+  table_courses    table_courses[]
+}
+
+model users {
+  id                                     String          @id
+  name                                   String
+  email                                  String
+  student_id                             String?
+  year                                   Int             @default(0)
+  major                                  String?
+  d_major                                String?
+  minors                                 String[]
+  languages                              String[]
+  favorites                              String[]
+  course_tables                          String[]
+  history_courses                        String[]
+  departments_departmentsTousers_d_major departments?    @relation("departmentsTousers_d_major", fields: [d_major], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  departments_departmentsTousers_major   departments?    @relation("departmentsTousers_major", fields: [major], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  course_tables_course_tablesTousers     course_tables[]
+
+  @@unique([id, email, student_id])
+}
+
+model areas {
+  id           String         @id
+  code         String
+  name         String
+  course_areas course_areas[]
+
+  @@unique([id, code, name])
+}
+
+model colleges {
+  id          String        @id
+  name        String
+  departments departments[]
+
+  @@unique([id, name])
+}
+
+model departments {
+  id                               String               @id
+  college_id                       String?
+  name_short                       String?
+  name_full                        String
+  name_alt                         String?
+  colleges                         colleges?            @relation(fields: [college_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "id")
+  course_departments               course_departments[]
+  users_departmentsTousers_d_major users[]              @relation("departmentsTousers_d_major")
+  users_departmentsTousers_major   users[]              @relation("departmentsTousers_major")
+
+  @@unique([id, name_full])
+}
+
+model specialties {
+  id                 String               @id
+  name               String
+  course_specialties course_specialties[]
+
+  @@unique([id, name])
+}
+
+model table_courses {
+  id            String
+  course_id     String
+  priority      BigInt
+  courses       courses       @relation(fields: [course_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_course")
+  course_tables course_tables @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_table")
+
+  @@id([id, course_id, priority], map: "table_id_pkey")
+  @@unique([id, course_id], map: "u_table_course")
+  @@unique([id, priority], map: "u_table_priority")
+}
+
+enum course_languages {
+  zh_TW  @map("zh-TW")
+  en_US  @map("en-US")
+}
+
+enum course_providers {
+  ntu
+  ntnu
+  ntust
+  other
+}
+
+enum course_requirements {
+  preassign
+  required
+  elective
+  other
+}
