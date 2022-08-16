@@ -1,13 +1,13 @@
-import express from "express";
-import Social_posts from "../models/Social_posts";
-import Post_reports from "../models/Post_reports";
-import prisma from "../../prisma";
-import { sendWebhookMessage } from "../utils/webhook_client";
-import { checkJwt } from "../auth";
+import { Router } from "express";
+import Social_posts from "@/src/models/Social_posts";
+import Post_reports from "@/src/models/Post_reports";
+import prisma from "@/prisma";
+import { sendWebhookMessage } from "@/src/utils/webhook_client";
+import { checkJwt } from "@/src/auth";
 import { v4 as uuidv4 } from "uuid";
 
 // route: "/api/v1/social"
-const router = express.Router();
+const router = Router();
 
 const get_self_vote_status = (post, user_id) => {
   if (post.upvotes.includes(user_id)) {

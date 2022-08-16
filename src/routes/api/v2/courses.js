@@ -1,17 +1,18 @@
-import express from "express";
+import { Router } from "express";
 import axios from "axios";
-import { checkJwt } from "../auth";
+import { checkJwt } from "@/src/auth";
 import { Prisma } from "@prisma/client";
-import prisma from "../../prisma";
-import { sendWebhookMessage } from "../utils/webhook_client";
+import prisma from "@/prisma";
+import { sendWebhookMessage } from "@/src/utils/webhook_client";
 import {
   course_include_all,
   course_post_process,
   generate_course_filter,
   getCoursesbyIds,
-} from "../queries/courses";
+} from "@/src/queries/courses";
 
-const router = express.Router();
+// route: "/api/v2/courses"
+const router = Router();
 
 // API version: 2.0
 router.get("/", async (req, res) => {

@@ -1,11 +1,12 @@
-import express from "express";
-import * as auth0_client from "../utils/auth0_client";
-import prisma from "../../prisma";
-import { checkJwt } from "../auth";
-import { sendWebhookMessage } from "../utils/webhook_client";
-import { getCoursesbyIds } from "../queries/courses";
+import { Router } from "express";
+import * as auth0_client from "@/src/utils/auth0_client";
+import prisma from "@/prisma";
+import { checkJwt } from "@/src/auth";
+import { sendWebhookMessage } from "@/src/utils/webhook_client";
+import { getCoursesbyIds } from "@/src/queries/courses";
 
-const router = express.Router();
+// route: "/api/v2/users"
+const router = Router();
 
 // API version: 2.0
 router.get("/:id", checkJwt, async (req, res) => {

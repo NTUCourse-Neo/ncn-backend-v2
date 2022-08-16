@@ -1,11 +1,12 @@
-import express from "express";
-import prisma from "../../prisma";
-import { sendWebhookMessage } from "../utils/webhook_client";
-import { checkJwt } from "../auth";
-import * as auth0_client from "../utils/auth0_client";
-import { getCoursesbyIds } from "../queries/courses";
+import { Router } from "express";
+import prisma from "@/prisma";
+import { sendWebhookMessage } from "@/src/utils/webhook_client";
+import { checkJwt } from "@/src/auth";
+import * as auth0_client from "@/src/utils/auth0_client";
+import { getCoursesbyIds } from "@/src/queries/courses";
 
-const router = express.Router();
+// route: "/api/v2/course_tables"
+const router = Router();
 const active_semester = process.env.SEMESTER;
 
 const check_is_admin = async (user_id) => {

@@ -1,4 +1,4 @@
-import prisma from "../../prisma";
+import prisma from "@/prisma";
 
 const course_include_all = {
   departments: {

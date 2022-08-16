@@ -1,5 +1,5 @@
 import request from "supertest";
-import { deleteStubData, insertStubData } from "../../../prisma/stubData";
+import { deleteStubData, insertStubData } from "@/prisma/stubData";
 import { app } from "../../express";
 
 describe("API /courses", () => {

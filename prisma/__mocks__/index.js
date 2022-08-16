@@ -9,7 +9,7 @@ const prisma = new PrismaClient({
   datasources: { db: { url } },
 });
 
-beforeEach(async () => {
+beforeAll(async () => {
   execSync(`npx prisma db push`, {
     env: {
       ...process.env,
@@ -18,7 +18,7 @@ beforeEach(async () => {
   });
 });
 
-afterEach(async () => {
+afterAll(async () => {
   await prisma.$executeRawUnsafe(
     `DROP SCHEMA IF EXISTS "${schemaId}" CASCADE;`
   );
