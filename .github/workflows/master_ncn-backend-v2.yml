@@ -28,7 +28,7 @@ jobs:
         run: yarn
 
       - name: Generate Prisma Client
-        run: npx prisma generate --schema=./src/prisma/schema.prisma
+        run: npx prisma generate
 
       - name: zip artifact for deployment
         run: zip -r --symlinks rel.zip ./* .babelrc .env.defaults
