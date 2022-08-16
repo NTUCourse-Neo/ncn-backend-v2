@@ -100,6 +100,7 @@ router.get("/:id", async (req, res) => {
 
 // API version: 2.0
 router.post("/", async (req, res) => {
+  // TODO: spawn uuid in backend instead of using frontend input
   const course_table_id = req.body.id;
   const course_table_name = req.body.name;
   const user_id = req.body.user_id;

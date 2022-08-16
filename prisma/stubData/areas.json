@@ -23,5 +23,10 @@
     "id": "foreign",
     "code": "共",
     "name": "外文領域"
+  },
+  {
+    "id": "test",
+    "code": "測試",
+    "name": "測試"
   }
 ]

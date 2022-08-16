@@ -1,0 +1,86 @@
+[
+  {
+    "course_id": "1102_17317",
+    "weekday": 1,
+    "interval": "3",
+    "location": "綜402"
+  },
+  {
+    "course_id": "1102_17317",
+    "weekday": 1,
+    "interval": "4",
+    "location": "綜402"
+  },
+  {
+    "course_id": "1102_17321",
+    "weekday": 1,
+    "interval": "6",
+    "location": "共205"
+  },
+  {
+    "course_id": "1102_17321",
+    "weekday": 1,
+    "interval": "7",
+    "location": "共205"
+  },
+  {
+    "course_id": "1102_17321",
+    "weekday": 1,
+    "interval": "8",
+    "location": "共205"
+  },
+  {
+    "course_id": "1102_17321",
+    "weekday": 1,
+    "interval": "9",
+    "location": "共205"
+  },
+  {
+    "course_id": "1102_17332",
+    "weekday": 1,
+    "interval": "10",
+    "location": "綜403"
+  },
+  {
+    "course_id": "1102_17332",
+    "weekday": 1,
+    "interval": "8",
+    "location": "綜403"
+  },
+  {
+    "course_id": "1102_17332",
+    "weekday": 1,
+    "interval": "9",
+    "location": "綜403"
+  },
+  {
+    "course_id": "1102_17334",
+    "weekday": 3,
+    "interval": "7",
+    "location": "生科632"
+  },
+  {
+    "course_id": "1102_17334",
+    "weekday": 3,
+    "interval": "8",
+    "location": "生科632"
+  },
+  {
+    "course_id": "1102_17380",
+    "weekday": 5,
+    "interval": "2",
+    "location": "畜二"
+  },
+  {
+    "course_id": "1102_17380",
+    "weekday": 5,
+    "interval": "3",
+    "location": "畜二"
+  },
+  {
+    "course_id": "1102_17380",
+    "weekday": 5,
+    "interval": "4",
+    "location": "畜二"
+  }
+]
