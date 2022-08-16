@@ -1,11 +1,10 @@
 import request from "supertest";
-// import prisma from "../../../prisma";
+import { deleteStubData, insertStubData } from "../../../prisma/stubData";
 import { app } from "../../express";
 
 describe("API /courses", () => {
   beforeEach(async () => {
-    // TODO: insert stub data
-    // await prisma.courses.createMany({ data: allCourseData });
+    await insertStubData();
   });
 
   describe("GET /", () => {
@@ -31,7 +30,6 @@ describe("API /courses", () => {
   });
 
   afterEach(async () => {
-    // TODO: cleanup
-    // await prisma.courses.deleteMany();
+    await deleteStubData();
   });
 });

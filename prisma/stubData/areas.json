@@ -1,0 +1,27 @@
+[
+  {
+    "id": "basic",
+    "code": "基",
+    "name": "基本能力課程"
+  },
+  {
+    "id": "chinese",
+    "code": "共",
+    "name": "國文領域"
+  },
+  {
+    "id": "english",
+    "code": "共",
+    "name": "英文領域"
+  },
+  {
+    "id": "english_adv",
+    "code": "共",
+    "name": "進階英文"
+  },
+  {
+    "id": "foreign",
+    "code": "共",
+    "name": "外文領域"
+  }
+]

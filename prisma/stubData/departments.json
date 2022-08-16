@@ -1,0 +1,44 @@
+[
+  {
+    "id": "0020",
+    "college_id": "0",
+    "name_short": "",
+    "name_full": "體育室",
+    "name_alt": ""
+  },
+  {
+    "id": "0030",
+    "college_id": "0",
+    "name_short": "",
+    "name_full": "軍訓室",
+    "name_alt": ""
+  },
+  {
+    "id": "0040",
+    "college_id": "0",
+    "name_short": "",
+    "name_full": "外語教學暨資源中心",
+    "name_alt": ""
+  },
+  {
+    "id": "0050",
+    "college_id": "0",
+    "name_short": "課活組",
+    "name_full": "學務處課外活動組",
+    "name_alt": "課外活動組"
+  },
+  {
+    "id": "5050",
+    "college_id": "5",
+    "name_short": "工科海洋系",
+    "name_full": "工程科學及海洋工程學系",
+    "name_alt": ""
+  },
+  {
+    "id": "2070",
+    "college_id": "2",
+    "name_short": "測試科系-縮寫",
+    "name_full": "測試科系-全名",
+    "name_alt": ""
+  }
+]
