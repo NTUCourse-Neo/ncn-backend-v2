@@ -60,14 +60,13 @@ model course_specialties {
 }
 
 model course_tables {
-  id            String          @id
-  name          String
-  user_id       String?
-  semester      String?
-  courses       String[]
-  expire_ts     DateTime?       @db.Timestamp(6)
-  users         users?          @relation(fields: [user_id], references: [id], onUpdate: Restrict)
-  table_courses table_courses[]
+  id        String    @id
+  name      String
+  user_id   String?
+  semester  String?
+  courses   String[]
+  expire_ts DateTime? @db.Timestamp(6)
+  users     users?    @relation(fields: [user_id], references: [id], onUpdate: Restrict)
 }
 
 model courses {
@@ -98,7 +97,6 @@ model courses {
   prerequisite_of  course_prerequisites[] @relation("course_prerequisites_pre_course_idTocourses")
   schedules        course_schedules[]
   specialties      course_specialties[]
-  table_courses    table_courses[]
 }
 
 model users {
@@ -158,18 +156,6 @@ model specialties {
   course_specialties course_specialties[]
 
   @@unique([id, name])
-}
-
-model table_courses {
-  id            String
-  course_id     String
-  priority      BigInt
-  courses       courses       @relation(fields: [course_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_course")
-  course_tables course_tables @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_table")
-
-  @@id([id, course_id, priority], map: "table_id_pkey")
-  @@unique([id, course_id], map: "u_table_course")
-  @@unique([id, priority], map: "u_table_priority")
 }
 
 enum course_languages {
