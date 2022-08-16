@@ -1,51 +1,166 @@
 [
   {
-    "id": "auth0|000000000000000000",
-    "name": "TestUser 0",
-    "email": "test.user@ntu.edu.tw",
-    "student_id": "B00000000",
+    "id": "test-user-id-0",
+    "name": "Test User 0",
+    "email": "user.0@ntu.edu.tw",
+    "student_id": "B0101010",
     "year": 0,
-    "major": "5050",
-    "d_major": "2070",
-    "minors": [],
-    "languages": [],
-    "favorites": [
-      "1102_17386",
-      "1102_17380"
-    ],
-    "course_tables": [
-      "00000000-0000-0000-0000-000000000000"
-    ],
-    "history_courses": []
-  },
-  {
-    "id": "auth0|111111111111111111",
-    "name": "測試使用者 1",
-    "email": "t.user@gmail.com",
-    "student_id": "",
-    "year": 0,
-    "major": null,
+    "major": "1020",
     "d_major": null,
     "minors": [],
     "languages": [],
-    "favorites": [
-      "1102_17386",
-      "1102_17380"
+    "favorites": [],
+    "course_tables": [
+      "816f8963-93d6-47ad-b03f-c5205c22b61a"
     ],
-    "course_tables": [],
     "history_courses": []
   },
   {
-    "id": "auth0|123456789123456789",
-    "name": "123456789@ntu.edu.tw",
-    "email": "123456789@ntu.edu.tw",
-    "student_id": "B00000000",
+    "id": "test-user-id-1",
+    "name": "Test User 1",
+    "email": "user.1@ntu.edu.tw",
+    "student_id": "B0101011",
     "year": 0,
     "major": null,
     "d_major": null,
     "minors": [],
     "languages": [],
     "favorites": [],
+    "course_tables": [],
+    "history_courses": []
+  },
+  {
+    "id": "test-user-id-2",
+    "name": "Test User 2",
+    "email": "user.2@ntu.edu.tw",
+    "student_id": "B0101012",
+    "year": 0,
+    "major": "3100",
+    "d_major": null,
+    "minors": [],
+    "languages": [],
+    "favorites": [],
+    "course_tables": [
+      "4ad5eba9-f328-49b9-aced-ec48e42a1344"
+    ],
+    "history_courses": []
+  },
+  {
+    "id": "test-user-id-3",
+    "name": "Test User 3",
+    "email": "user.3@ntu.edu.tw",
+    "student_id": "B0101013",
+    "year": 0,
+    "major": null,
+    "d_major": null,
+    "minors": [],
+    "languages": [],
+    "favorites": [
+      "1102_52721",
+      "1102_71631"
+    ],
+    "course_tables": [
+      "e9f5c3ad-e5e5-44ee-950e-cd478a6edeba"
+    ],
+    "history_courses": []
+  },
+  {
+    "id": "test-user-id-4",
+    "name": "Test User 4",
+    "email": "user.4@ntu.edu.tw",
+    "student_id": "B0101014",
+    "year": 0,
+    "major": "1070",
+    "d_major": null,
+    "minors": [],
+    "languages": [],
+    "favorites": [
+      "1102_13785",
+      "1102_31464"
+    ],
+    "course_tables": [
+      "6a8db590-cb97-4364-a097-e5a9243a13e1"
+    ],
+    "history_courses": []
+  },
+  {
+    "id": "test-user-id-5",
+    "name": "Test User 5",
+    "email": "user.5@ntu.edu.tw",
+    "student_id": "B0101015",
+    "year": 0,
+    "major": "1040",
+    "d_major": "6120",
+    "minors": [],
+    "languages": [],
+    "favorites": [],
+    "course_tables": [
+      "e4d48a63-93d4-459d-b7ed-997cde2c6d4a"
+    ],
+    "history_courses": []
+  },
+  {
+    "id": "test-user-id-6",
+    "name": "Test User 6",
+    "email": "user.6@ntu.edu.tw",
+    "student_id": "B0101016",
+    "year": 0,
+    "major": null,
+    "d_major": null,
+    "minors": [],
+    "languages": [],
+    "favorites": [],
+    "course_tables": [
+      "a17d4817-14f0-4bb4-b324-b675218ed5ed"
+    ],
+    "history_courses": []
+  },
+  {
+    "id": "test-user-id-7",
+    "name": "Test User 7",
+    "email": "user.7@ntu.edu.tw",
+    "student_id": "B0101017",
+    "year": 0,
+    "major": "6050",
+    "d_major": null,
+    "minors": [],
+    "languages": [],
+    "favorites": [],
+    "course_tables": [
+      "8b0d0754-b015-4938-8dc5-1347d83289b1"
+    ],
+    "history_courses": []
+  },
+  {
+    "id": "test-user-id-8",
+    "name": "Test User 8",
+    "email": "user.8@ntu.edu.tw",
+    "student_id": "B0101018",
+    "year": 0,
+    "major": "1020",
+    "d_major": null,
+    "minors": [],
+    "languages": [],
+    "favorites": [],
+    "course_tables": [
+      "dec39a3b-3c33-4ea8-a851-8629ec86b11e"
+    ],
+    "history_courses": []
+  },
+  {
+    "id": "test-user-id-9",
+    "name": "Test User 9",
+    "email": "user.9@ntu.edu.tw",
+    "student_id": "B0101019",
+    "year": 0,
+    "major": null,
+    "d_major": null,
+    "minors": [],
+    "languages": [],
+    "favorites": [
+      "1102_70670",
+      "1102_10388"
+    ],
     "course_tables": [],
     "history_courses": []
   }

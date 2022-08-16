@@ -4,7 +4,7 @@ import { app } from "@/src/express";
 
 describe("API /v2/courses", () => {
   beforeEach(async () => {
-    await insertStubData();
+    // await insertStubData();
   });
 
   describe("GET /", () => {
@@ -86,6 +86,6 @@ describe("API /v2/courses", () => {
   });
 
   afterEach(async () => {
-    await deleteStubData();
+    // await deleteStubData();
   });
 });

@@ -1,14 +1,182 @@
 [
   {
-    "course_id": "1102_17317",
-    "area_id": "test"
+    "course_id": "1102_97109",
+    "area_id": "pe_2"
   },
   {
-    "course_id": "1102_17321",
-    "area_id": "test"
+    "course_id": "1102_97135",
+    "area_id": "pe_2"
   },
   {
-    "course_id": "1102_17339",
-    "area_id": "test"
+    "course_id": "1102_97153",
+    "area_id": "pe_2"
+  },
+  {
+    "course_id": "1102_62726",
+    "area_id": "g_a2"
+  },
+  {
+    "course_id": "1102_62726",
+    "area_id": "g_ax"
+  },
+  {
+    "course_id": "1102_01013",
+    "area_id": "chinese"
+  },
+  {
+    "course_id": "1102_82924",
+    "area_id": "g_a5"
+  },
+  {
+    "course_id": "1102_28094",
+    "area_id": "g_ax"
+  },
+  {
+    "course_id": "1102_49953",
+    "area_id": "g_ax"
+  },
+  {
+    "course_id": "1102_31464",
+    "area_id": "g_ax"
+  },
+  {
+    "course_id": "1102_82924",
+    "area_id": "g_ax"
+  },
+  {
+    "course_id": "1102_74433",
+    "area_id": "g_a7"
+  },
+  {
+    "course_id": "1102_13785",
+    "area_id": "g_a2"
+  },
+  {
+    "course_id": "1102_74566",
+    "area_id": "g_ax"
+  },
+  {
+    "course_id": "1102_74433",
+    "area_id": "g_ax"
+  },
+  {
+    "course_id": "1102_49014",
+    "area_id": "g_ax"
+  },
+  {
+    "course_id": "1102_72915",
+    "area_id": "g_ax"
+  },
+  {
+    "course_id": "1102_40793",
+    "area_id": "g_ax"
+  },
+  {
+    "course_id": "1102_13785",
+    "area_id": "g_ax"
+  },
+  {
+    "course_id": "1102_49953",
+    "area_id": "g_a7"
+  },
+  {
+    "course_id": "1102_72915",
+    "area_id": "g_a2"
+  },
+  {
+    "course_id": "1102_16800",
+    "area_id": "basic"
+  },
+  {
+    "course_id": "1102_69175",
+    "area_id": "g_ax"
+  },
+  {
+    "course_id": "1102_01016",
+    "area_id": "chinese"
+  },
+  {
+    "course_id": "1102_74566",
+    "area_id": "g_a7"
+  },
+  {
+    "course_id": "1102_82924",
+    "area_id": "g_a8"
+  },
+  {
+    "course_id": "1102_37963",
+    "area_id": "g_ax"
+  },
+  {
+    "course_id": "1102_85970",
+    "area_id": "g_ax"
+  },
+  {
+    "course_id": "1102_93005",
+    "area_id": "millitary"
+  },
+  {
+    "course_id": "1102_31464",
+    "area_id": "g_a1"
+  },
+  {
+    "course_id": "1102_28094",
+    "area_id": "g_a1"
+  },
+  {
+    "course_id": "1102_74566",
+    "area_id": "g_a8"
+  },
+  {
+    "course_id": "1102_62321",
+    "area_id": "g_ax"
+  },
+  {
+    "course_id": "1102_62321",
+    "area_id": "g_a8"
+  },
+  {
+    "course_id": "1102_37963",
+    "area_id": "g_a1"
+  },
+  {
+    "course_id": "1102_49014",
+    "area_id": "basic"
+  },
+  {
+    "course_id": "1102_01052",
+    "area_id": "chinese"
+  },
+  {
+    "course_id": "1102_62726",
+    "area_id": "g_a3"
+  },
+  {
+    "course_id": "1102_35992",
+    "area_id": "shared_selective"
+  },
+  {
+    "course_id": "1102_16800",
+    "area_id": "g_ax"
+  },
+  {
+    "course_id": "1102_85970",
+    "area_id": "basic"
+  },
+  {
+    "course_id": "1102_93010",
+    "area_id": "millitary"
+  },
+  {
+    "course_id": "1102_69175",
+    "area_id": "g_a1"
+  },
+  {
+    "course_id": "1102_40793",
+    "area_id": "g_a1"
+  },
+  {
+    "course_id": "1102_74433",
+    "area_id": "g_a4"
   }
 ]

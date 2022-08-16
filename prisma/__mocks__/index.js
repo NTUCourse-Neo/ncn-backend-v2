@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { execSync } from "child_process";
 import { URL } from "url";
+import { insertStubData } from "../stubData";
 
 const schemaId = `test`;
 const url = makePostgresURL(schemaId);
@@ -16,6 +17,7 @@ beforeAll(async () => {
       POSTGRES_URL: url,
     },
   });
+  await insertStubData();
 });
 
 afterAll(async () => {

@@ -3,7 +3,7 @@ import areas from "./areas.json";
 import colleges from "./colleges.json";
 import courses from "./courses.json";
 import departments from "./departments.json";
-import specialties from "./specialties.json";
+// import specialties from "./specialties.json";
 import users from "./users.json";
 import course_areas from "./course_areas.json";
 import course_departments from "./course_departments.json";
@@ -18,7 +18,7 @@ const AllDataRaw = {
   colleges,
   courses,
   departments,
-  specialties,
+  // specialties,
   users,
   course_areas,
   course_departments,
