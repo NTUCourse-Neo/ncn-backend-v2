@@ -44,7 +44,7 @@ router.get("/", async (req, res) => {
 
 // API version: 2.0
 router.post("/search", async (req, res) => {
-  const { keyword, fields, filter, batch_size, offset } = req.body;
+  const { keyword, fields, filter, batch_size, offset, semester } = req.body;
   const valid_keyword_fields = [
     "name",
     "teacher",
@@ -84,7 +84,7 @@ router.post("/search", async (req, res) => {
     }
     conditions.AND.push({
       semester: {
-        equals: active_semester,
+        equals: semester ?? active_semester,
       },
     });
     const courses = await prisma.courses.findMany(find_object);
