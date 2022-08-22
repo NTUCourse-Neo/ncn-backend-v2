@@ -97,6 +97,10 @@ async function main() {
       u.id = getMaskedUserId(u.id);
       u.email = `user.${i}@ntu.edu.tw`;
       u.student_id = `B010101${i}`;
+
+      if (i < 1) {
+        u.name += " (admin)";
+      }
       return u;
     })
   );

@@ -1,7 +1,7 @@
 [
   {
     "id": "test-user-id-0",
-    "name": "Test User 0",
+    "name": "Test User 0 (admin)",
     "email": "user.0@ntu.edu.tw",
     "student_id": "B0101010",
     "year": 0,

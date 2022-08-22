@@ -10,6 +10,8 @@ const prisma = new PrismaClient({
   datasources: { db: { url } },
 });
 
+jest.setTimeout(10 * 1000);
+
 beforeAll(async () => {
   execSync(`npx prisma db push`, {
     env: {

@@ -1,6 +1,7 @@
 import request from "supertest";
 import StubData, { deleteStubData, insertStubData } from "@/prisma/stubData";
 import { app } from "@/src/express";
+import TokensByUserId from "@/src/__tests__/util/UserTokens";
 
 describe("API /v2/courses", () => {
   beforeEach(async () => {
@@ -9,19 +10,23 @@ describe("API /v2/courses", () => {
 
   describe("GET /", () => {
     // TODO: add admin stub user data
-    // it("should be available for admin", async () => {
-    //   const response = await request(app).get("/api/v2/courses");
+    it("should be available for admin", async () => {
+      const response = await request(app)
+        .get("/api/v2/courses")
+        .set("Authorization", `Bearer ${TokensByUserId[StubData.users[0].id]}`);
 
-    //   expect(response.statusCode).toBe(403);
-    // });
+      expect(response.statusCode).toBe(200);
+    });
 
-    // it("should return all courses", async () => {
-    //   const response = await request(app).get("/api/v2/courses");
+    it("should return all courses", async () => {
+      const response = await request(app)
+        .get("/api/v2/courses")
+        .set("Authorization", `Bearer ${TokensByUserId[StubData.users[0].id]}`);
 
-    //   expect(response.statusCode).toBe(200);
-    //   expect(response.body.courses.length).toBe(StubData.courses.length);
-    //   // TODO: check content
-    // });
+      expect(response.statusCode).toBe(200);
+      expect(response.body.courses.length).toBe(StubData.courses.length);
+      // TODO: check content
+    });
 
     it("should be invalid without auth", async () => {
       const response = await request(app).get("/api/v2/courses");

@@ -1,7 +1,5 @@
 import axios from "axios";
-import dotenv from "dotenv-defaults";
-
-dotenv.config();
+import "dotenv-defaults/config";
 
 const get_token = async () => {
   let options = {
