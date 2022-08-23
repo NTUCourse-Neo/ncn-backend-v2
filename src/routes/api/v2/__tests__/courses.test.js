@@ -1,14 +1,14 @@
 import request from "supertest";
-import StubData, { deleteStubData, insertStubData } from "@/prisma/stubData";
+import StubData from "@/prisma/stubData";
 import { app } from "@/src/express";
-import TokensByUserId from "@/src/__tests__/util/UserTokens";
 
 describe("API /v2/courses", () => {
   describe("GET /", () => {
     it("should return all courses", async () => {
+      const token = StubData.getAdminToken();
       const res = await request(app)
         .get("/api/v2/courses")
-        .set("Authorization", `Bearer ${TokensByUserId[StubData.users[0].id]}`);
+        .set("Authorization", `Bearer ${token}`);
 
       expect(res.statusCode).toBe(200);
       expect(res.body.courses.length).toBe(StubData.courses.length);
@@ -17,7 +17,7 @@ describe("API /v2/courses", () => {
       );
     });
 
-    it("should be invalid without auth", async () => {
+    it("should be invalid without admin privilege", async () => {
       const res = await request(app).get("/api/v2/courses");
 
       expect(res.statusCode).toBe(403);
@@ -39,6 +39,19 @@ describe("API /v2/courses", () => {
       offset: 0,
     };
 
+    it("should support search by name", async () => {
+      const res = await request(app)
+        .post("/api/v2/courses/search")
+        .send(CompleteRequestObject);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.courses.length > 0).toBeTruthy();
+      // console.log(res.body);
+      // TODO: check content
+    });
+
+    // TODO: add more search condition checks
+
     it("should response invalid requests with 400", async () => {
       for (const key of Object.keys(CompleteRequestObject)) {
         const badRequestObject = {
@@ -52,22 +65,21 @@ describe("API /v2/courses", () => {
         expect(res.statusCode).toBe(400);
       }
     });
-
-    it("should support search by name", async () => {
-      const res = await request(app)
-        .post("/api/v2/courses/search")
-        .send(CompleteRequestObject);
-
-      expect(res.statusCode).toBe(200);
-      expect(res.body.courses.length > 0).toBeTruthy();
-      // console.log(res.body);
-      // TODO: check content
-    });
   });
 
   describe("POST /ids", () => {
     const SomeCourse = StubData.courses.slice(0, 3);
     const SomeCourseIds = SomeCourse.map((c) => c.id);
+
+    it("should return the selected courses", async () => {
+      const res = await request(app).post("/api/v2/courses/ids").send({
+        ids: SomeCourseIds,
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.courses.length).toBe(SomeCourseIds.length);
+      expect(res.body.courses[0].name).toBe(SomeCourse[0].name);
+    });
 
     it("should block a request with any unknown id", async () => {
       const res = await request(app)
@@ -79,14 +91,16 @@ describe("API /v2/courses", () => {
       expect(res.statusCode).toBe(400);
     });
 
-    it("should return the selected courses", async () => {
-      const res = await request(app).post("/api/v2/courses/ids").send({
-        ids: SomeCourseIds,
-      });
+    it("should block a request with too many id", async () => {
+      const res = await request(app)
+        .post("/api/v2/courses/ids")
+        .send({
+          ids: Array(process.env.COURSE_REQUEST_LIMIT + 1).fill(
+            StubData.courses[0].id
+          ),
+        });
 
-      expect(res.statusCode).toBe(200);
-      expect(res.body.courses.length).toBe(SomeCourseIds.length);
-      expect(res.body.courses[0].name).toBe(SomeCourse[0].name);
+      expect(res.statusCode).toBe(400);
     });
   });
 

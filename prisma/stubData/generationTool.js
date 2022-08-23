@@ -22,9 +22,16 @@ async function main() {
   const users = await prisma.users.findMany({ take: 10, skip: 50 });
 
   // tables
-  const courseTables = await prisma.course_tables.findMany({
+  const userTables = await prisma.course_tables.findMany({
     where: { user_id: { in: users.map((u) => u.id) } },
   });
+  const guestTable = await prisma.course_tables.findMany({
+    where: {
+      user_id: null,
+    },
+    take: 3,
+  });
+  const courseTables = [...userTables, ...guestTable];
 
   // courses
   const courseIds = new Set();
@@ -107,7 +114,9 @@ async function main() {
   await writeModelData(
     "course_tables",
     courseTables.map((ct) => {
-      ct.user_id = getMaskedUserId(ct.user_id);
+      if (ct.user_id) {
+        ct.user_id = getMaskedUserId(ct.user_id);
+      }
       return ct;
     })
   );

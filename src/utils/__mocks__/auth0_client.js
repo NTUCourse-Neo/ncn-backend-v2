@@ -35,20 +35,10 @@ export async function delete_user_by_id(id, token) {
   return null;
 }
 
-/**
- * To make a stub user admin, simply set `user.name` to include "admin" magic string
- */
-export const AdminIds = new Set();
-for (const user of StubData.users) {
-  if (user.name.includes("admin")) {
-    AdminIds.add(user.id);
-  }
-}
-
 export async function get_user_meta_roles(id, token) {
   checkAccessToken(token);
 
-  if (AdminIds.has(id)) {
+  if (StubData.isUserAdmin(id)) {
     return ["admin"];
   } else if (id) {
     return ["user"];

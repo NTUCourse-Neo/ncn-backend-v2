@@ -27,9 +27,10 @@ router.get("/", checkJwt, async (req, res) => {
   let result;
   try {
     result = await prisma.course_tables.findMany();
-    res
-      .status(200)
-      .send({ course_table: result, message: "Get full course table package" });
+    res.status(200).send({
+      course_tables: result,
+      message: "Get full course table package",
+    });
     console.log("Get full course table package.");
   } catch (err) {
     res.status(500).send({ coures_table: null, message: err });

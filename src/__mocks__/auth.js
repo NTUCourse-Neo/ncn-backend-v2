@@ -1,17 +1,15 @@
 import "dotenv-defaults/config";
-import users from "@/prisma/stubData/users.json";
+import stubDataContainer from "@/prisma/stubData";
 
-const usersByToken = new Map();
-for (const user of users) {
-  usersByToken.set(user.id, user);
-}
-
-export function checkJwt(req, res) {
-  const token = req.header.authorization.split(" ")[1];
-  const user = usersByToken.get(token);
-  return (req, res) => {
+export function checkJwt(req, res, next) {
+  const token = req.get("Authorization")?.split(" ")[1];
+  if (token) {
+    const user = stubDataContainer.getUserByToken(token);
     req.user = {
       sub: user.id,
     };
-  };
+    next();
+  } else {
+    res.status(401).send({ message: "Missing JWT token" });
+  }
 }

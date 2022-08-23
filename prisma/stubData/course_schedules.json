@@ -816,6 +816,42 @@
     "location": "新103"
   },
   {
+    "course_id": "1102_96134",
+    "weekday": 3,
+    "interval": "10",
+    "location": "TR-213"
+  },
+  {
+    "course_id": "1102_96134",
+    "weekday": 3,
+    "interval": "9",
+    "location": "TR-213"
+  },
+  {
+    "course_id": "1102_97004",
+    "weekday": 4,
+    "interval": "8",
+    "location": "綜館舞蹈室"
+  },
+  {
+    "course_id": "1102_97004",
+    "weekday": 4,
+    "interval": "9",
+    "location": "綜館舞蹈室"
+  },
+  {
+    "course_id": "1102_97016",
+    "weekday": 1,
+    "interval": "8",
+    "location": "綜館技擊AB"
+  },
+  {
+    "course_id": "1102_97016",
+    "weekday": 1,
+    "interval": "9",
+    "location": "綜館技擊AB"
+  },
+  {
     "course_id": "1102_97109",
     "weekday": 1,
     "interval": "8",
