@@ -206,4 +206,152 @@ describe("API /v2/course_tables", () => {
       await prisma.course_tables.delete({ where: { id: tableTemplate.id } });
     });
   });
+
+  describe("PATCH /:id", () => {
+    const [user1, user2] = StubData.normalUsers.slice(0, 2);
+    const token1 = StubData.getTokenByUserId(user1.id);
+    const token2 = StubData.getTokenByUserId(user2.id);
+    const tableTemplate = {
+      id: uuidv4(),
+      name: "temp table",
+      semester: process.env.SEMESTER,
+      user_id: user1.id,
+      courses: [],
+    };
+
+    const newName = "new temp table";
+    const newCourses = StubData.courses.slice(0, 3).map((c) => c.id);
+
+    beforeEach(async () => {
+      await prisma.course_tables.create({ data: tableTemplate });
+    });
+
+    it("should return the updated table", async () => {
+      const res = await request(app)
+        .patch(`/api/v2/course_tables/${tableTemplate.id}`)
+        .set("Authorization", `Bearer ${token1}`)
+        .send({
+          courses: newCourses,
+        });
+
+      expect(res.statusCode).toBe(200);
+      expect(res?.body.course_table.name).toEqual(tableTemplate.name);
+      expect(res?.body.course_table.courses.map((c) => c.id)).toEqual(
+        newCourses
+      );
+    });
+
+    it("should block guests to update other's tables", async () => {
+      const res = await request(app)
+        .patch(`/api/v2/course_tables/${tableTemplate.id}`)
+        .send({
+          courses: newCourses,
+        });
+
+      expect(res.statusCode).toBe(401);
+
+      const resTable = await prisma.course_tables.findUnique({
+        where: { id: tableTemplate.id },
+      });
+      expect(resTable?.name).toBe(tableTemplate.name);
+      expect(resTable?.courses).toEqual(tableTemplate.courses);
+    });
+
+    it("should block users to update other's tables", async () => {
+      const res = await request(app)
+        .patch(`/api/v2/course_tables/${tableTemplate.id}`)
+        .set("Authorization", `Bearer ${token2}`)
+        .send({
+          courses: newCourses,
+        });
+
+      expect(res.statusCode).toBe(403);
+
+      const resTable = await prisma.course_tables.findUnique({
+        where: { id: tableTemplate.id },
+      });
+      expect(resTable?.name).toBe(tableTemplate.name);
+      expect(resTable?.courses).toEqual(tableTemplate.courses);
+    });
+
+    it("should response 404 to a request with unknown table id", async () => {
+      const res = await request(app)
+        .patch(`/api/v2/course_tables/unknown_table_id`)
+        .set("Authorization", `Bearer ${token2}`)
+        .send({
+          courses: newCourses,
+        });
+
+      expect(res.statusCode).toBe(404);
+
+      const resTable = await prisma.course_tables.findUnique({
+        where: { id: tableTemplate.id },
+      });
+      expect(resTable?.name).toBe(tableTemplate.name);
+      expect(resTable?.courses).toEqual(tableTemplate.courses);
+    });
+
+    it("should block a request with no update data", async () => {
+      const res = await request(app)
+        .patch(`/api/v2/course_tables/${tableTemplate.id}`)
+        .set("Authorization", `Bearer ${token1}`);
+
+      expect(res.statusCode).toBe(400);
+    });
+
+    it("should block a request with invalid course id", async () => {
+      const res = await request(app)
+        .patch(`/api/v2/course_tables/${tableTemplate.id}`)
+        .set("Authorization", `Bearer ${token1}`)
+        .send({
+          courses: ["unknown_course_id", ...newCourses],
+        });
+
+      expect(res.statusCode).toBe(400);
+
+      const resTable = await prisma.course_tables.findUnique({
+        where: { id: tableTemplate.id },
+      });
+      expect(resTable?.name).toBe(tableTemplate.name);
+      expect(resTable?.courses).toEqual(tableTemplate.courses);
+    });
+
+    it("should update table name in db", async () => {
+      const res = await request(app)
+        .patch(`/api/v2/course_tables/${tableTemplate.id}`)
+        .set("Authorization", `Bearer ${token1}`)
+        .send({
+          name: newName,
+        });
+
+      expect(res.statusCode).toBe(200);
+
+      const resTable = await prisma.course_tables.findUnique({
+        where: { id: tableTemplate.id },
+      });
+      expect(resTable?.name).toBe(newName);
+      expect(resTable?.courses).toEqual(tableTemplate.courses);
+    });
+
+    it("should update table courses in db", async () => {
+      const res = await request(app)
+        .patch(`/api/v2/course_tables/${tableTemplate.id}`)
+        .set("Authorization", `Bearer ${token1}`)
+        .send({
+          courses: newCourses,
+        });
+
+      expect(res.statusCode).toBe(200);
+
+      const resTable = await prisma.course_tables.findUnique({
+        where: { id: tableTemplate.id },
+      });
+      expect(resTable?.name).toBe(tableTemplate.name);
+      expect(resTable?.courses).toEqual(newCourses);
+    });
+
+    afterEach(async () => {
+      await prisma.course_tables.delete({ where: { id: tableTemplate.id } });
+    });
+  });
 });
