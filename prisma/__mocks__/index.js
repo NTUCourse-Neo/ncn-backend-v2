@@ -13,6 +13,7 @@ const prisma = new PrismaClient({
 jest.setTimeout(10 * 1000);
 
 beforeAll(async () => {
+  console.log(`Initializing DB...`);
   execSync(`npx prisma db push`, {
     env: {
       ...process.env,
@@ -20,6 +21,7 @@ beforeAll(async () => {
     },
   });
   await insertStubData();
+  console.log(`DB initialization finished.`);
 });
 
 afterAll(async () => {

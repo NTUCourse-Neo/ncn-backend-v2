@@ -159,8 +159,8 @@ model specialties {
 }
 
 enum course_languages {
-  zh_TW  @map("zh-TW")
-  en_US  @map("en-US")
+  zh_TW @map("zh-TW")
+  en_US @map("en-US")
 }
 
 enum course_providers {
