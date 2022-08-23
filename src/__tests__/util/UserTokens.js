@@ -1,5 +1,9 @@
 import StubData from "@/prisma/stubData";
 
+/**
+ * NOTE: By current setting, only the first user is admin
+ * @see: `src/utils/__mocks__/auth0_clients.js`
+ */
 const TokensByUserId = {};
 
 const { users } = StubData;

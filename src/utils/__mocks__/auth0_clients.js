@@ -1,5 +1,6 @@
 import { AxiosError } from "axios";
 import "dotenv-defaults/config";
+import StubData from "@/prisma/stubData";
 
 const MockedToken = `MockedTokenForTesting`;
 
@@ -30,12 +31,19 @@ export async function get_user_by_id(id, token) {
 export async function delete_user_by_id(id, token) {
   checkAccessToken(token);
 
-  // Not used is test currently
+  // Not used in test currently
   return null;
 }
 
-const AdminIds = new Set();
-AdminIds.add("admin");
+/**
+ * To make a stub user admin, simply set `user.name` to include "admin" magic string
+ */
+export const AdminIds = new Set();
+for (const user of StubData.users) {
+  if (user.name.includes("admin")) {
+    AdminIds.add(user.id);
+  }
+}
 
 export async function get_user_meta_roles(id, token) {
   checkAccessToken(token);
