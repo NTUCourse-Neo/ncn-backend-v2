@@ -34,7 +34,7 @@
     "azure": "babel-node src/server.js",
     "lint": "./node_modules/.bin/eslint --config=./.eslintrc.json .",
     "lint-fix": "./node_modules/.bin/eslint --config=./.eslintrc.json . --cache --fix",
-    "test": "jest \".*.test.js\""
+    "test": "jest -i \".*.test.js\""
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --cache --fix"

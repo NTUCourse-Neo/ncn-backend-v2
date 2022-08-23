@@ -17,8 +17,11 @@ function checkAccessToken(token) {
 export async function get_user_by_email(email, token) {
   checkAccessToken(token);
 
-  // Not used in test currently
-  return null;
+  if (email === StubData.getUnregisteredData().email) {
+    return [StubData.getUnregisteredData()];
+  }
+
+  return [];
 }
 
 export async function get_user_by_id(id, token) {

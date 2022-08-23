@@ -10,7 +10,7 @@ const prisma = new PrismaClient({
   datasources: { db: { url } },
 });
 
-jest.setTimeout(15 * 1000);
+jest.setTimeout(5 * 1000);
 
 beforeAll(async () => {
   console.log(`Initializing DB...`);

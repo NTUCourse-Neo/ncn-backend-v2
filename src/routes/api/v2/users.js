@@ -56,9 +56,9 @@ router.get("/:id", checkJwt, async (req, res) => {
 // API version: 2.0
 // Checks Auth0 user instance.
 router.post("/", checkJwt, async (req, res) => {
-  const email = req.body.user.email;
-  const token_sub = req.user.sub;
   try {
+    const email = req.body.user.email;
+    const token_sub = req.user.sub;
     if (!email) {
       res.status(400).send({ message: "email is required", user: null });
       return;
@@ -466,7 +466,7 @@ async function process_user_info(user) {
     }
   }
   const minor_codes = JSON.parse(JSON.stringify(user.minors));
-  user.minors = await prisma.department.findMany({
+  user.minors = await prisma.departments.findMany({
     where: {
       id: {
         in: minor_codes,

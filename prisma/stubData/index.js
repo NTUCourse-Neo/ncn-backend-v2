@@ -12,6 +12,13 @@ import course_schedules from "./course_schedules.json";
 const Verbose = 0;
 // const Verbose = 1;
 
+const UnregisteredData = {
+  user_id: "auth0|test-unregistered",
+  token: "a.a.a",
+  name: "test-user",
+  email: "test@test.com",
+};
+
 class StubDataContainer {
   constructor() {
     // add all raw data
@@ -56,8 +63,6 @@ class StubDataContainer {
         this._linkedTables.push(table);
       }
     }
-
-    // export { UsersByToken };
   }
 
   getAllRaw() {
@@ -106,12 +111,17 @@ class StubDataContainer {
   getLinkedTable() {
     return this._linkedTables[0];
   }
+
+  getUnregisteredData() {
+    return UnregisteredData;
+  }
 }
 
 const stubDataContainer = new StubDataContainer();
 
 export async function insertStubData() {
   for (const [name, data] of Object.entries(stubDataContainer.getAllRaw())) {
+    Verbose > 0 && console.log(`inserting "${name}", ${data.length} entries`);
     await prisma[name].createMany({ data });
     Verbose > 0 && console.log(`Model ${name} injected`);
   }

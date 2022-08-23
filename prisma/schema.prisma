@@ -8,7 +8,6 @@ datasource db {
   url      = env("POSTGRES_URL")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
 model course_areas {
   course_id String
   area_id   String
@@ -18,7 +17,6 @@ model course_areas {
   @@id([course_id, area_id])
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
 model course_departments {
   course_id     String
   department_id String
@@ -28,7 +26,6 @@ model course_departments {
   @@id([course_id, department_id])
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
 model course_prerequisites {
   course_id                                           String
   pre_course_id                                       String
@@ -38,7 +35,6 @@ model course_prerequisites {
   @@id([course_id, pre_course_id])
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
 model course_schedules {
   course_id String
   weekday   Int
@@ -49,7 +45,6 @@ model course_schedules {
   @@id([course_id, weekday, interval, location])
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
 model course_specialties {
   course_id    String
   specialty_id String
@@ -100,21 +95,21 @@ model courses {
 }
 
 model users {
-  id                                     String          @id
-  name                                   String
-  email                                  String
-  student_id                             String?
-  year                                   Int             @default(0)
-  major                                  String?
-  d_major                                String?
-  minors                                 String[]
-  languages                              String[]
-  favorites                              String[]
-  course_tables                          String[]
-  history_courses                        String[]
-  departments_departmentsTousers_d_major departments?    @relation("departmentsTousers_d_major", fields: [d_major], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  departments_departmentsTousers_major   departments?    @relation("departmentsTousers_major", fields: [major], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  course_tables_course_tablesTousers     course_tables[]
+  id                                 String          @id
+  name                               String
+  email                              String
+  student_id                         String?
+  year                               Int             @default(0)
+  major                              String?
+  d_major                            String?
+  minors                             String[]
+  languages                          String[]
+  favorites                          String[]
+  course_tables                      String[]
+  history_courses                    String[]
+  d_major_dept                       departments?    @relation("departmentsTousers_d_major", fields: [d_major], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  major_dept                         departments?    @relation("departmentsTousers_major", fields: [major], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  course_tables_course_tablesTousers course_tables[]
 
   @@unique([id, email, student_id])
 }

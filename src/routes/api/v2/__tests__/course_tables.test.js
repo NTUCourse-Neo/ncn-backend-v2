@@ -199,11 +199,14 @@ describe("API /v2/course_tables", () => {
       const resTable = await prisma.course_tables.findUnique({
         where: { id: tableTemplate.id },
       });
-      expect(resTable).not.toEqual(expect.anything());
+      expect(resTable).toBe(null);
     });
 
     afterEach(async () => {
-      await prisma.course_tables.delete({ where: { id: tableTemplate.id } });
+      // hackfix: using `deleteMany` to delete records that may not exists
+      await prisma.course_tables.deleteMany({
+        where: { id: tableTemplate.id },
+      });
     });
   });
 
