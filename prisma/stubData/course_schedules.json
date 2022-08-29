@@ -1,0 +1,890 @@
+[
+  {
+    "course_id": "1102_01013",
+    "weekday": 4,
+    "interval": "7",
+    "location": "普306"
+  },
+  {
+    "course_id": "1102_01013",
+    "weekday": 4,
+    "interval": "8",
+    "location": "普306"
+  },
+  {
+    "course_id": "1102_01013",
+    "weekday": 4,
+    "interval": "9",
+    "location": "普306"
+  },
+  {
+    "course_id": "1102_01016",
+    "weekday": 4,
+    "interval": "7",
+    "location": "綜402"
+  },
+  {
+    "course_id": "1102_01016",
+    "weekday": 4,
+    "interval": "8",
+    "location": "綜402"
+  },
+  {
+    "course_id": "1102_01016",
+    "weekday": 4,
+    "interval": "9",
+    "location": "綜402"
+  },
+  {
+    "course_id": "1102_01052",
+    "weekday": 4,
+    "interval": "7",
+    "location": "共404"
+  },
+  {
+    "course_id": "1102_01052",
+    "weekday": 4,
+    "interval": "8",
+    "location": "共404"
+  },
+  {
+    "course_id": "1102_01052",
+    "weekday": 4,
+    "interval": "9",
+    "location": "共404"
+  },
+  {
+    "course_id": "1102_10388",
+    "weekday": 5,
+    "interval": "3",
+    "location": "工綜209"
+  },
+  {
+    "course_id": "1102_10388",
+    "weekday": 5,
+    "interval": "4",
+    "location": "工綜209"
+  },
+  {
+    "course_id": "1102_10388",
+    "weekday": 5,
+    "interval": "5",
+    "location": "工綜209"
+  },
+  {
+    "course_id": "1102_13785",
+    "weekday": 3,
+    "interval": "7",
+    "location": "普405"
+  },
+  {
+    "course_id": "1102_13785",
+    "weekday": 3,
+    "interval": "8",
+    "location": "普405"
+  },
+  {
+    "course_id": "1102_13785",
+    "weekday": 3,
+    "interval": "9",
+    "location": "普405"
+  },
+  {
+    "course_id": "1102_16245",
+    "weekday": 3,
+    "interval": "3",
+    "location": "普202"
+  },
+  {
+    "course_id": "1102_16245",
+    "weekday": 3,
+    "interval": "4",
+    "location": "普202"
+  },
+  {
+    "course_id": "1102_16800",
+    "weekday": 3,
+    "interval": "2",
+    "location": "共103"
+  },
+  {
+    "course_id": "1102_16800",
+    "weekday": 3,
+    "interval": "3",
+    "location": "共103"
+  },
+  {
+    "course_id": "1102_16800",
+    "weekday": 3,
+    "interval": "4",
+    "location": "共103"
+  },
+  {
+    "course_id": "1102_17788",
+    "weekday": 1,
+    "interval": "3",
+    "location": "普304"
+  },
+  {
+    "course_id": "1102_17788",
+    "weekday": 1,
+    "interval": "4",
+    "location": "普304"
+  },
+  {
+    "course_id": "1102_17788",
+    "weekday": 3,
+    "interval": "8",
+    "location": "普301"
+  },
+  {
+    "course_id": "1102_17788",
+    "weekday": 3,
+    "interval": "9",
+    "location": "普301"
+  },
+  {
+    "course_id": "1102_20169",
+    "weekday": 1,
+    "interval": "6",
+    "location": "社103"
+  },
+  {
+    "course_id": "1102_20169",
+    "weekday": 1,
+    "interval": "7",
+    "location": "社103"
+  },
+  {
+    "course_id": "1102_20169",
+    "weekday": 1,
+    "interval": "8",
+    "location": "社103"
+  },
+  {
+    "course_id": "1102_21495",
+    "weekday": 5,
+    "interval": "3",
+    "location": "普201"
+  },
+  {
+    "course_id": "1102_21495",
+    "weekday": 5,
+    "interval": "4",
+    "location": "普201"
+  },
+  {
+    "course_id": "1102_27006",
+    "weekday": 1,
+    "interval": "8",
+    "location": "普505"
+  },
+  {
+    "course_id": "1102_27006",
+    "weekday": 1,
+    "interval": "9",
+    "location": "普505"
+  },
+  {
+    "course_id": "1102_28094",
+    "weekday": 4,
+    "interval": "6",
+    "location": "綜401"
+  },
+  {
+    "course_id": "1102_28094",
+    "weekday": 4,
+    "interval": "7",
+    "location": "綜401"
+  },
+  {
+    "course_id": "1102_28094",
+    "weekday": 4,
+    "interval": "8",
+    "location": "綜401"
+  },
+  {
+    "course_id": "1102_29882",
+    "weekday": 2,
+    "interval": "6",
+    "location": "社科102"
+  },
+  {
+    "course_id": "1102_29882",
+    "weekday": 2,
+    "interval": "7",
+    "location": "社科102"
+  },
+  {
+    "course_id": "1102_29882",
+    "weekday": 3,
+    "interval": "2",
+    "location": "社科102"
+  },
+  {
+    "course_id": "1102_29882",
+    "weekday": 3,
+    "interval": "3",
+    "location": "社科102"
+  },
+  {
+    "course_id": "1102_29882",
+    "weekday": 3,
+    "interval": "4",
+    "location": "社科102"
+  },
+  {
+    "course_id": "1102_31464",
+    "weekday": 5,
+    "interval": "8",
+    "location": "博雅202"
+  },
+  {
+    "course_id": "1102_31464",
+    "weekday": 5,
+    "interval": "9",
+    "location": "博雅202"
+  },
+  {
+    "course_id": "1102_32509",
+    "weekday": 1,
+    "interval": "3",
+    "location": "社科303"
+  },
+  {
+    "course_id": "1102_32509",
+    "weekday": 1,
+    "interval": "4",
+    "location": "社科303"
+  },
+  {
+    "course_id": "1102_32509",
+    "weekday": 2,
+    "interval": "3",
+    "location": "社科303"
+  },
+  {
+    "course_id": "1102_32509",
+    "weekday": 2,
+    "interval": "4",
+    "location": "社科303"
+  },
+  {
+    "course_id": "1102_32509",
+    "weekday": 2,
+    "interval": "5",
+    "location": "社科303"
+  },
+  {
+    "course_id": "1102_35992",
+    "weekday": 3,
+    "interval": "2",
+    "location": "卓R505"
+  },
+  {
+    "course_id": "1102_35992",
+    "weekday": 3,
+    "interval": "3",
+    "location": "卓R505"
+  },
+  {
+    "course_id": "1102_35992",
+    "weekday": 3,
+    "interval": "4",
+    "location": "卓R505"
+  },
+  {
+    "course_id": "1102_37963",
+    "weekday": 4,
+    "interval": "8",
+    "location": "外教劇場"
+  },
+  {
+    "course_id": "1102_37963",
+    "weekday": 4,
+    "interval": "9",
+    "location": "外教劇場"
+  },
+  {
+    "course_id": "1102_38601",
+    "weekday": 4,
+    "interval": "6",
+    "location": "綜403"
+  },
+  {
+    "course_id": "1102_38601",
+    "weekday": 4,
+    "interval": "7",
+    "location": "綜403"
+  },
+  {
+    "course_id": "1102_38601",
+    "weekday": 4,
+    "interval": "8",
+    "location": "綜403"
+  },
+  {
+    "course_id": "1102_40793",
+    "weekday": 1,
+    "interval": "10",
+    "location": "博雅102"
+  },
+  {
+    "course_id": "1102_40793",
+    "weekday": 3,
+    "interval": "5",
+    "location": "博雅102"
+  },
+  {
+    "course_id": "1102_40793",
+    "weekday": 3,
+    "interval": "6",
+    "location": "博雅102"
+  },
+  {
+    "course_id": "1102_41354",
+    "weekday": 5,
+    "interval": "6",
+    "location": "普303"
+  },
+  {
+    "course_id": "1102_41354",
+    "weekday": 5,
+    "interval": "7",
+    "location": "普303"
+  },
+  {
+    "course_id": "1102_42441",
+    "weekday": 3,
+    "interval": "6",
+    "location": "社科402"
+  },
+  {
+    "course_id": "1102_42441",
+    "weekday": 3,
+    "interval": "7",
+    "location": "社科402"
+  },
+  {
+    "course_id": "1102_42441",
+    "weekday": 3,
+    "interval": "8",
+    "location": "社科402"
+  },
+  {
+    "course_id": "1102_43793",
+    "weekday": 2,
+    "interval": "6",
+    "location": "社科501"
+  },
+  {
+    "course_id": "1102_43793",
+    "weekday": 2,
+    "interval": "7",
+    "location": "社科501"
+  },
+  {
+    "course_id": "1102_43793",
+    "weekday": 3,
+    "interval": "2",
+    "location": "社科502"
+  },
+  {
+    "course_id": "1102_43793",
+    "weekday": 3,
+    "interval": "3",
+    "location": "社科502"
+  },
+  {
+    "course_id": "1102_43793",
+    "weekday": 3,
+    "interval": "4",
+    "location": "社科502"
+  },
+  {
+    "course_id": "1102_44138",
+    "weekday": 2,
+    "interval": "3",
+    "location": "普501"
+  },
+  {
+    "course_id": "1102_44138",
+    "weekday": 2,
+    "interval": "4",
+    "location": "普501"
+  },
+  {
+    "course_id": "1102_44138",
+    "weekday": 2,
+    "interval": "5",
+    "location": "普501"
+  },
+  {
+    "course_id": "1102_47796",
+    "weekday": 5,
+    "interval": "6",
+    "location": "社科507"
+  },
+  {
+    "course_id": "1102_47796",
+    "weekday": 5,
+    "interval": "7",
+    "location": "社科507"
+  },
+  {
+    "course_id": "1102_47796",
+    "weekday": 5,
+    "interval": "8",
+    "location": "社科507"
+  },
+  {
+    "course_id": "1102_49014",
+    "weekday": 2,
+    "interval": "A",
+    "location": "卓R505"
+  },
+  {
+    "course_id": "1102_49014",
+    "weekday": 2,
+    "interval": "B",
+    "location": "卓R505"
+  },
+  {
+    "course_id": "1102_49014",
+    "weekday": 2,
+    "interval": "C",
+    "location": "卓R505"
+  },
+  {
+    "course_id": "1102_49953",
+    "weekday": 4,
+    "interval": "8",
+    "location": "大氣B105"
+  },
+  {
+    "course_id": "1102_49953",
+    "weekday": 4,
+    "interval": "9",
+    "location": "大氣B105"
+  },
+  {
+    "course_id": "1102_52721",
+    "weekday": 2,
+    "interval": "2",
+    "location": "社科403"
+  },
+  {
+    "course_id": "1102_52721",
+    "weekday": 2,
+    "interval": "3",
+    "location": "社科403"
+  },
+  {
+    "course_id": "1102_52721",
+    "weekday": 2,
+    "interval": "4",
+    "location": "社科403"
+  },
+  {
+    "course_id": "1102_53902",
+    "weekday": 1,
+    "interval": "6",
+    "location": "普204"
+  },
+  {
+    "course_id": "1102_53902",
+    "weekday": 1,
+    "interval": "7",
+    "location": "普204"
+  },
+  {
+    "course_id": "1102_55891",
+    "weekday": 4,
+    "interval": "2",
+    "location": "社科405"
+  },
+  {
+    "course_id": "1102_55891",
+    "weekday": 4,
+    "interval": "3",
+    "location": "社科405"
+  },
+  {
+    "course_id": "1102_55891",
+    "weekday": 4,
+    "interval": "4",
+    "location": "社科405"
+  },
+  {
+    "course_id": "1102_62127",
+    "weekday": 4,
+    "interval": "3",
+    "location": "共307"
+  },
+  {
+    "course_id": "1102_62127",
+    "weekday": 4,
+    "interval": "4",
+    "location": "共307"
+  },
+  {
+    "course_id": "1102_62321",
+    "weekday": 2,
+    "interval": "6",
+    "location": "普101"
+  },
+  {
+    "course_id": "1102_62321",
+    "weekday": 2,
+    "interval": "7",
+    "location": "普101"
+  },
+  {
+    "course_id": "1102_62726",
+    "weekday": 4,
+    "interval": "1",
+    "location": "博雅202"
+  },
+  {
+    "course_id": "1102_62726",
+    "weekday": 4,
+    "interval": "2",
+    "location": "博雅202"
+  },
+  {
+    "course_id": "1102_67104",
+    "weekday": 4,
+    "interval": "3",
+    "location": "社科202"
+  },
+  {
+    "course_id": "1102_67104",
+    "weekday": 4,
+    "interval": "4",
+    "location": "社科202"
+  },
+  {
+    "course_id": "1102_67104",
+    "weekday": 5,
+    "interval": "6",
+    "location": "社科202"
+  },
+  {
+    "course_id": "1102_67104",
+    "weekday": 5,
+    "interval": "7",
+    "location": "社科202"
+  },
+  {
+    "course_id": "1102_67104",
+    "weekday": 5,
+    "interval": "8",
+    "location": "社科202"
+  },
+  {
+    "course_id": "1102_68363",
+    "weekday": 2,
+    "interval": "10",
+    "location": "南館地下A"
+  },
+  {
+    "course_id": "1102_68363",
+    "weekday": 2,
+    "interval": "7",
+    "location": "南館地下A"
+  },
+  {
+    "course_id": "1102_68363",
+    "weekday": 2,
+    "interval": "8",
+    "location": "南館地下A"
+  },
+  {
+    "course_id": "1102_68363",
+    "weekday": 2,
+    "interval": "9",
+    "location": "南館地下A"
+  },
+  {
+    "course_id": "1102_69175",
+    "weekday": 4,
+    "interval": "6",
+    "location": "外教劇場"
+  },
+  {
+    "course_id": "1102_69175",
+    "weekday": 4,
+    "interval": "7",
+    "location": "外教劇場"
+  },
+  {
+    "course_id": "1102_70670",
+    "weekday": 2,
+    "interval": "A",
+    "location": "工科視聽室"
+  },
+  {
+    "course_id": "1102_70670",
+    "weekday": 2,
+    "interval": "B",
+    "location": "工科視聽室"
+  },
+  {
+    "course_id": "1102_70670",
+    "weekday": 2,
+    "interval": "C",
+    "location": "工科視聽室"
+  },
+  {
+    "course_id": "1102_71631",
+    "weekday": 2,
+    "interval": "8",
+    "location": "新102"
+  },
+  {
+    "course_id": "1102_71631",
+    "weekday": 2,
+    "interval": "9",
+    "location": "新102"
+  },
+  {
+    "course_id": "1102_71631",
+    "weekday": 5,
+    "interval": "1",
+    "location": "新102"
+  },
+  {
+    "course_id": "1102_71631",
+    "weekday": 5,
+    "interval": "2",
+    "location": "新102"
+  },
+  {
+    "course_id": "1102_72915",
+    "weekday": 1,
+    "interval": "8",
+    "location": "普501"
+  },
+  {
+    "course_id": "1102_72915",
+    "weekday": 1,
+    "interval": "9",
+    "location": "普501"
+  },
+  {
+    "course_id": "1102_74433",
+    "weekday": 3,
+    "interval": "6",
+    "location": "博雅101"
+  },
+  {
+    "course_id": "1102_74433",
+    "weekday": 3,
+    "interval": "7",
+    "location": "博雅101"
+  },
+  {
+    "course_id": "1102_74566",
+    "weekday": 1,
+    "interval": "8",
+    "location": "普101"
+  },
+  {
+    "course_id": "1102_74566",
+    "weekday": 1,
+    "interval": "9",
+    "location": "普101"
+  },
+  {
+    "course_id": "1102_76148",
+    "weekday": 3,
+    "interval": "1",
+    "location": "普204"
+  },
+  {
+    "course_id": "1102_76148",
+    "weekday": 3,
+    "interval": "2",
+    "location": "普204"
+  },
+  {
+    "course_id": "1102_76808",
+    "weekday": 1,
+    "interval": "2",
+    "location": "社科403"
+  },
+  {
+    "course_id": "1102_76808",
+    "weekday": 1,
+    "interval": "3",
+    "location": "社科403"
+  },
+  {
+    "course_id": "1102_76808",
+    "weekday": 1,
+    "interval": "4",
+    "location": "社科403"
+  },
+  {
+    "course_id": "1102_77199",
+    "weekday": 4,
+    "interval": "2",
+    "location": "社科502"
+  },
+  {
+    "course_id": "1102_77199",
+    "weekday": 4,
+    "interval": "3",
+    "location": "社科502"
+  },
+  {
+    "course_id": "1102_77199",
+    "weekday": 4,
+    "interval": "4",
+    "location": "社科502"
+  },
+  {
+    "course_id": "1102_82924",
+    "weekday": 1,
+    "interval": "8",
+    "location": "普102"
+  },
+  {
+    "course_id": "1102_82924",
+    "weekday": 1,
+    "interval": "9",
+    "location": "普102"
+  },
+  {
+    "course_id": "1102_85244",
+    "weekday": 4,
+    "interval": "8",
+    "location": "社科303"
+  },
+  {
+    "course_id": "1102_85244",
+    "weekday": 4,
+    "interval": "9",
+    "location": "社科303"
+  },
+  {
+    "course_id": "1102_85970",
+    "weekday": 3,
+    "interval": "10",
+    "location": "卓R505"
+  },
+  {
+    "course_id": "1102_85970",
+    "weekday": 3,
+    "interval": "7",
+    "location": "卓R505"
+  },
+  {
+    "course_id": "1102_85970",
+    "weekday": 3,
+    "interval": "8",
+    "location": "卓R505"
+  },
+  {
+    "course_id": "1102_85970",
+    "weekday": 3,
+    "interval": "9",
+    "location": "卓R505"
+  },
+  {
+    "course_id": "1102_93005",
+    "weekday": 3,
+    "interval": "6",
+    "location": "普103"
+  },
+  {
+    "course_id": "1102_93005",
+    "weekday": 3,
+    "interval": "7",
+    "location": "普103"
+  },
+  {
+    "course_id": "1102_93010",
+    "weekday": 2,
+    "interval": "6",
+    "location": "新103"
+  },
+  {
+    "course_id": "1102_93010",
+    "weekday": 2,
+    "interval": "7",
+    "location": "新103"
+  },
+  {
+    "course_id": "1102_96134",
+    "weekday": 3,
+    "interval": "10",
+    "location": "TR-213"
+  },
+  {
+    "course_id": "1102_96134",
+    "weekday": 3,
+    "interval": "9",
+    "location": "TR-213"
+  },
+  {
+    "course_id": "1102_97004",
+    "weekday": 4,
+    "interval": "8",
+    "location": "綜館舞蹈室"
+  },
+  {
+    "course_id": "1102_97004",
+    "weekday": 4,
+    "interval": "9",
+    "location": "綜館舞蹈室"
+  },
+  {
+    "course_id": "1102_97016",
+    "weekday": 1,
+    "interval": "8",
+    "location": "綜館技擊AB"
+  },
+  {
+    "course_id": "1102_97016",
+    "weekday": 1,
+    "interval": "9",
+    "location": "綜館技擊AB"
+  },
+  {
+    "course_id": "1102_97109",
+    "weekday": 1,
+    "interval": "8",
+    "location": "[醫]館1F"
+  },
+  {
+    "course_id": "1102_97109",
+    "weekday": 1,
+    "interval": "9",
+    "location": "[醫]館1F"
+  },
+  {
+    "course_id": "1102_97135",
+    "weekday": 2,
+    "interval": "8",
+    "location": "請洽系所辦"
+  },
+  {
+    "course_id": "1102_97135",
+    "weekday": 2,
+    "interval": "9",
+    "location": "請洽系所辦"
+  },
+  {
+    "course_id": "1102_97153",
+    "weekday": 4,
+    "interval": "6",
+    "location": "舊館羽球場"
+  },
+  {
+    "course_id": "1102_97153",
+    "weekday": 4,
+    "interval": "7",
+    "location": "舊館羽球場"
+  }
+]

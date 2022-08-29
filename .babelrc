@@ -1,5 +1,25 @@
 {
-    "presets": [
-        "@babel/preset-env"
+  "presets": [
+    "@babel/preset-env"
+  ],
+  "plugins": [
+    [
+      "module-resolver",
+      {
+        "root": [
+          "."
+        ],
+        "alias": {
+          "^@/(.+)": "./\\1"
+        }
+      }
     ]
+  ],
+  "env": {
+    "test": {
+      "plugins": [
+        "@babel/plugin-transform-runtime"
+      ]
+    }
+  }
 }

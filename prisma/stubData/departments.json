@@ -1,0 +1,93 @@
+[
+  {
+    "id": "1040",
+    "college_id": "1",
+    "name_short": "哲學系",
+    "name_full": "哲學系",
+    "name_alt": ""
+  },
+  {
+    "id": "1020",
+    "college_id": "1",
+    "name_short": "外文系",
+    "name_full": "外國語文學系",
+    "name_alt": ""
+  },
+  {
+    "id": "1070",
+    "college_id": "1",
+    "name_short": "日文系",
+    "name_full": "日本語文學系",
+    "name_alt": ""
+  },
+  {
+    "id": "2010",
+    "college_id": "2",
+    "name_short": "數學系",
+    "name_full": "數學系",
+    "name_alt": ""
+  },
+  {
+    "id": "2070",
+    "college_id": "2",
+    "name_short": "心理系",
+    "name_full": "心理學系",
+    "name_alt": ""
+  },
+  {
+    "id": "3050",
+    "college_id": "3",
+    "name_short": "社會系",
+    "name_full": "社會學系",
+    "name_alt": ""
+  },
+  {
+    "id": "3030",
+    "college_id": "3",
+    "name_short": "經濟系",
+    "name_full": "經濟學系",
+    "name_alt": ""
+  },
+  {
+    "id": "3100",
+    "college_id": "3",
+    "name_short": "社工系",
+    "name_full": "社會工作學系",
+    "name_alt": ""
+  },
+  {
+    "id": "6050",
+    "college_id": "6",
+    "name_short": "森林環資系",
+    "name_full": "森林環境暨資源學系",
+    "name_alt": ""
+  },
+  {
+    "id": "5050",
+    "college_id": "5",
+    "name_short": "工科海洋系",
+    "name_full": "工程科學及海洋工程學系",
+    "name_alt": ""
+  },
+  {
+    "id": "5020",
+    "college_id": "5",
+    "name_short": "機械系",
+    "name_full": "機械工程學系",
+    "name_alt": ""
+  },
+  {
+    "id": "6120",
+    "college_id": "6",
+    "name_short": "昆蟲系",
+    "name_full": "昆蟲學系",
+    "name_alt": ""
+  },
+  {
+    "id": "1010",
+    "college_id": "1",
+    "name_short": "中文系",
+    "name_full": "中國文學系",
+    "name_alt": ""
+  }
+]

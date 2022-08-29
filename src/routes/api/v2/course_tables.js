@@ -1,12 +1,12 @@
-import express from "express";
-import { PrismaClient } from "@prisma/client";
-import { sendWebhookMessage } from "../utils/webhook_client";
-import { checkJwt } from "../auth";
-import * as auth0_client from "../utils/auth0_client";
-import { getCoursesbyIds } from "../prisma/course_query";
+import { Router } from "express";
+import prisma from "@/prisma";
+import { sendWebhookMessage } from "@/src/utils/webhook_client";
+import { checkJwt } from "@/src/auth";
+import * as auth0_client from "@/src/utils/auth0_client";
+import { getCoursesbyIds } from "@/src/queries/courses";
 
-const prisma = new PrismaClient();
-const router = express.Router();
+// route: "/api/v2/course_tables"
+const router = Router();
 const active_semester = process.env.SEMESTER;
 
 const check_is_admin = async (user_id) => {
@@ -27,9 +27,10 @@ router.get("/", checkJwt, async (req, res) => {
   let result;
   try {
     result = await prisma.course_tables.findMany();
-    res
-      .status(200)
-      .send({ course_table: result, message: "Get full course table package" });
+    res.status(200).send({
+      course_tables: result,
+      message: "Get full course table package",
+    });
     console.log("Get full course table package.");
   } catch (err) {
     res.status(500).send({ coures_table: null, message: err });
@@ -100,6 +101,7 @@ router.get("/:id", async (req, res) => {
 
 // API version: 2.0
 router.post("/", async (req, res) => {
+  // TODO: spawn uuid in backend instead of using frontend input
   const course_table_id = req.body.id;
   const course_table_name = req.body.name;
   const user_id = req.body.user_id;

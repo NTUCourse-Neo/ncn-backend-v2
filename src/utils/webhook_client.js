@@ -1,6 +1,5 @@
-import dotenv from "dotenv-defaults";
+import "dotenv-defaults/config";
 import axios from "axios";
-dotenv.config();
 
 const msg_tmpl = {
   content: "",

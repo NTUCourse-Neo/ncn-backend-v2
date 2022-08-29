@@ -1,16 +1,15 @@
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import prisma from "@/prisma";
 
 const course_include_all = {
   departments: {
     select: {
-      department: true,
+      departments: true,
     },
   },
   areas: {
     select: {
       area_id: true,
-      area: {
+      areas: {
         select: {
           name: true,
         },
@@ -20,7 +19,7 @@ const course_include_all = {
   specialties: {
     select: {
       specialty_id: true,
-      specialty: {
+      specialties: {
         select: {
           name: true,
         },
@@ -129,19 +128,19 @@ function generate_course_filter(filter, ids = null) {
 }
 
 async function getCoursesbyIds(ids, doSort = true) {
-  if(ids.length === 0) {
+  if (ids.length === 0) {
     return [];
   }
   const courses = await prisma.courses.findMany({
     where: {
       id: {
         in: ids,
-      }
+      },
     },
-    include: course_include_all
+    include: course_include_all,
   });
   if (courses) {
-    if(!doSort) {
+    if (!doSort) {
       return courses;
     }
     const sortedCourses = ids.map((id) =>
@@ -153,4 +152,9 @@ async function getCoursesbyIds(ids, doSort = true) {
   }
 }
 
-export { course_include_all, course_post_process, generate_course_filter, getCoursesbyIds };
+export {
+  course_include_all,
+  course_post_process,
+  generate_course_filter,
+  getCoursesbyIds,
+};

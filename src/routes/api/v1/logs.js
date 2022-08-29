@@ -1,7 +1,8 @@
-import express from "express";
-import { sendWebhookMessage } from "../utils/webhook_client";
+import { Router } from "express";
+import { sendWebhookMessage } from "@/src/utils/webhook_client";
 
-const router = express.Router();
+// route: "/api/v1/logs"
+const router = Router();
 
 // API version: 1.0
 router.post("/error", async (req, res) => {

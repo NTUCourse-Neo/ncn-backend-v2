@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy Node.js app to Azure Web App - ncn-backend-v2
+name: Build and deploy Node.js app to Azure Web App - ncn-backend-v2-new
 
 on:
   push:
@@ -31,7 +31,7 @@ jobs:
         run: npx prisma generate
 
       - name: zip artifact for deployment
-        run: zip -r --symlinks rel.zip ./* .babelrc .env.defaults
+        run: zip -r rel.zip ./* .babelrc .env.defaults
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
@@ -56,7 +56,7 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'ncn-backend-v2'
+          app-name: 'ncn-backend-v2-new'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_33FC97FE68A748CC98185098533416BC }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_D1CB065A6D4A48678ABF45CDA240C02C }}
           package: rel.zip

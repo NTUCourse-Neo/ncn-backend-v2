@@ -1,12 +1,18 @@
-import express from "express";
+import { Router } from "express";
 import axios from "axios";
-import { checkJwt } from "../auth";
-import { Prisma, PrismaClient } from "@prisma/client";
-import { sendWebhookMessage } from "../utils/webhook_client";
-import { course_include_all, course_post_process, generate_course_filter, getCoursesbyIds } from "../prisma/course_query";
+import { checkJwt } from "@/src/auth";
+import { Prisma } from "@prisma/client";
+import prisma from "@/prisma";
+import { sendWebhookMessage } from "@/src/utils/webhook_client";
+import {
+  course_include_all,
+  course_post_process,
+  generate_course_filter,
+  getCoursesbyIds,
+} from "@/src/queries/courses";
 
-const router = express.Router();
-const prisma = new PrismaClient();
+// route: "/api/v2/courses"
+const router = Router();
 
 // API version: 2.0
 router.get("/", async (req, res) => {
@@ -38,10 +44,19 @@ router.get("/", async (req, res) => {
 
 // API version: 2.0
 router.post("/search", async (req, res) => {
-  const { keyword, fields, filter, batch_size, offset } = req.body;
-  const valid_keyword_fields = ["name", "teacher", "serial", "code", "identifier"];
-  const active_semester = process.env.SEMESTER
-  if(!fields || fields.map((field) => valid_keyword_fields.includes(field)).includes(false)) {
+  const { keyword, fields, filter, batch_size, offset, semester } = req.body;
+  const valid_keyword_fields = [
+    "name",
+    "teacher",
+    "serial",
+    "code",
+    "identifier",
+  ];
+  const active_semester = process.env.SEMESTER;
+  if (
+    !fields ||
+    fields.map((field) => valid_keyword_fields.includes(field)).includes(false)
+  ) {
     res.status(400).send({ message: "Invalid keyword fields." });
     return;
   }
@@ -69,7 +84,7 @@ router.post("/search", async (req, res) => {
     }
     conditions.AND.push({
       semester: {
-        equals: active_semester,
+        equals: semester ?? active_semester,
       },
     });
     const courses = await prisma.courses.findMany(find_object);
@@ -117,7 +132,10 @@ router.post("/ids", async (req, res) => {
   }
   try {
     const courses = await getCoursesbyIds(ids, sorted == null ? true : sorted);
-    res.status(200).send({ courses: course_post_process(courses), total_count: courses.length });
+    res.status(200).send({
+      courses: course_post_process(courses),
+      total_count: courses.length,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).send({ message: err });
