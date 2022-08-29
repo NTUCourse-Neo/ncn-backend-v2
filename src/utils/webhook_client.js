@@ -1,7 +1,8 @@
 import "dotenv-defaults/config";
 import axios from "axios";
+import cloneDeep from "lodash/cloneDeep";
 
-const msg_tmpl = {
+const MessageTemplate = {
   content: "",
   embeds: [
     {
@@ -20,42 +21,45 @@ const msg_tmpl = {
     "https://external-preview.redd.it/UEwzwB-90sxfOxpN5kjf3qmfSLS6o-sat995maKZS5Q.png?auto=webp&s=21032b88ac0ee2ee73a2dda37d3560ae1277cfc1",
 };
 
-const msg_type = {
-  error: {
+export const MessageTypes = {
+  Error: {
     title: "Error",
     color: 16711680,
   },
-  warning: {
+  Warning: {
     title: "Warning",
     color: 16776960,
   },
-  info: {
+  Info: {
     title: "Info",
     color: 39423,
   },
-  success: {
+  Success: {
     title: "Success",
     color: 65379,
   },
 };
 
-const sendWebhookMessage = async (type, desc, fields) => {
+export async function sendWebhookMessage(messageType, description, fields) {
   if (process.env.ENV === "dev") {
     return;
   }
   try {
-    let msg = JSON.parse(JSON.stringify(msg_tmpl));
-    if (type === "error" || type === "warning") {
-      msg.content = "<@&932646597370720319>\n" + desc;
+    const msg = cloneDeep(MessageTemplate);
+    if (
+      messageType === MessageTypes.Error ||
+      messageType === MessageTypes.Warning
+    ) {
+      msg.content = "<@&932646597370720319>\n" + description;
     } else {
-      msg.content = desc;
+      msg.content = description;
     }
-    msg.embeds[0].description = desc;
-    msg.embeds[0].title = msg_type[type].title;
-    msg.embeds[0].color = msg_type[type].color;
+    msg.embeds[0].description = description;
+    msg.embeds[0].title = messageType.title;
+    msg.embeds[0].color = messageType.color;
     msg.embeds[0].fields = fields;
     msg.embeds[0].timestamp = new Date().toISOString();
-    let options = {
+    const options = {
       method: "POST",
       url: process.env.DISCORD_WEBHOOK_URL,
       headers: { "content-type": "application/json" },
@@ -65,6 +69,25 @@ const sendWebhookMessage = async (type, desc, fields) => {
   } catch (err) {
     console.error(err);
   }
-};
+}
 
-export { sendWebhookMessage };
+export async function reportError(fields) {
+  await sendWebhookMessage(
+    MessageTypes.Error,
+    "Error occurred in ncn-backend.",
+    fields
+  );
+}
+
+export async function reportAPIError({ method, route, reqBody, error }) {
+  await reportError([
+    { name: "Component", value: "Backend API endpoint" },
+    { name: "Method", value: method },
+    { name: "Route", value: route },
+    {
+      name: "Request Body",
+      value: "```\n" + JSON.stringify(reqBody) + "\n```",
+    },
+    { name: "Error Log", value: "```\n" + error + "\n```" },
+  ]);
+}

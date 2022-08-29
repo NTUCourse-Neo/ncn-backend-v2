@@ -1,10 +1,10 @@
 import { Router } from "express";
+import { v4 as uuidv4 } from "uuid";
+import prisma from "@/prisma";
 import Social_posts from "@/src/models/Social_posts";
 import Post_reports from "@/src/models/Post_reports";
-import prisma from "@/prisma";
-import { sendWebhookMessage } from "@/src/utils/webhook_client";
+import { MessageTypes, reportAPIError } from "@/src/utils/webhook_client";
 import { checkJwt } from "@/src/auth";
-import { v4 as uuidv4 } from "uuid";
 
 // route: "/api/v1/social"
 const router = Router();
@@ -46,18 +46,14 @@ router.get("/posts/:id/", checkJwt, async (req, res) => {
       },
     });
   } catch (err) {
+    console.error(err);
     res.status(500).send({ message: err });
-    const fields = [
-      { name: "Component", value: "Backend API endpoint" },
-      { name: "Method", value: "GET" },
-      { name: "Route", value: "/social/posts/:id" },
-      {
-        name: "Request Body",
-        value: "```\n" + JSON.stringify(req.body) + "\n```",
-      },
-      { name: "Error Log", value: "```\n" + err + "\n```" },
-    ];
-    await sendWebhookMessage("error", "Error occurred in ncn-backend.", fields);
+    await reportAPIError({
+      method: "GET",
+      route: "/social/posts/:id",
+      reqBody: req.body,
+      error: err,
+    });
   }
 });
 
@@ -89,18 +85,14 @@ router.get("/courses/:id/posts", checkJwt, async (req, res) => {
       }),
     });
   } catch (err) {
+    console.error(err);
     res.status(500).send({ message: err });
-    const fields = [
-      { name: "Component", value: "Backend API endpoint" },
-      { name: "Method", value: "GET" },
-      { name: "Route", value: "/social/courses/:id/posts" },
-      {
-        name: "Request Body",
-        value: "```\n" + JSON.stringify(req.body) + "\n```",
-      },
-      { name: "Error Log", value: "```\n" + err + "\n```" },
-    ];
-    await sendWebhookMessage("error", "Error occurred in ncn-backend.", fields);
+    await reportAPIError({
+      method: "GET",
+      route: "/social/courses/:id/posts",
+      reqBody: req.body,
+      error: err,
+    });
   }
 });
 
@@ -151,23 +143,19 @@ router.post("/courses/:id/posts", checkJwt, async (req, res) => {
       },
     ];
     await sendWebhookMessage(
-      "info",
+      MessageTypes.Info,
       "🥵 There's a new community post!",
       fields
     );
   } catch (err) {
+    console.error(err);
     res.status(500).send({ message: err });
-    const fields = [
-      { name: "Component", value: "Backend API endpoint" },
-      { name: "Method", value: "POST" },
-      { name: "Route", value: "/social/courses/:id/posts" },
-      {
-        name: "Request Body",
-        value: "```\n" + JSON.stringify(req.body) + "\n```",
-      },
-      { name: "Error Log", value: "```\n" + err + "\n```" },
-    ];
-    await sendWebhookMessage("error", "Error occurred in ncn-backend.", fields);
+    await reportAPIError({
+      method: "POST",
+      route: "/social/courses/:id/posts",
+      reqBody: req.body,
+      error: err,
+    });
   }
 });
 
@@ -217,23 +205,19 @@ router.post("/posts/:id/report", checkJwt, async (req, res) => {
       { name: "reason", value: new_report.reason },
     ];
     await sendWebhookMessage(
-      "warning",
+      MessageTypes.Warning,
       "👇😑👆 There's a new community post report case",
       fields
     );
   } catch (err) {
+    console.error(err);
     res.status(500).send({ message: err });
-    const fields = [
-      { name: "Component", value: "Backend API endpoint" },
-      { name: "Method", value: "POST" },
-      { name: "Route", value: "/social/posts/:id/report" },
-      {
-        name: "Request Body",
-        value: "```\n" + JSON.stringify(req.body) + "\n```",
-      },
-      { name: "Error Log", value: "```\n" + err + "\n```" },
-    ];
-    await sendWebhookMessage("error", "Error occurred in ncn-backend.", fields);
+    await reportAPIError({
+      method: "POST",
+      route: "/social/posts/:id/report",
+      reqBody: req.body,
+      error: err,
+    });
   }
 });
 
@@ -290,18 +274,14 @@ router.patch("/posts/:id/votes", checkJwt, async (req, res) => {
     await Social_posts.findByIdAndUpdate({ _id: post_id }, post);
     res.status(200).send({ message: "Vote updated." });
   } catch (err) {
+    console.error(err);
     res.status(500).send({ message: err });
-    const fields = [
-      { name: "Component", value: "Backend API endpoint" },
-      { name: "Method", value: "PATCH" },
-      { name: "Route", value: "/social/posts/:id/votes" },
-      {
-        name: "Request Body",
-        value: "```\n" + JSON.stringify(req.body) + "\n```",
-      },
-      { name: "Error Log", value: "```\n" + err + "\n```" },
-    ];
-    await sendWebhookMessage("error", "Error occurred in ncn-backend.", fields);
+    await reportAPIError({
+      method: "PATCH",
+      route: "/social/posts/:id/votes",
+      reqBody: req.body,
+      error: err,
+    });
   }
 });
 
@@ -323,18 +303,14 @@ router.delete("/posts/:id", checkJwt, async (req, res) => {
     await Social_posts.deleteOne({ _id: post_id });
     res.status(200).send({ message: "Post deleted." });
   } catch (err) {
+    console.error(err);
     res.status(500).send({ message: err });
-    const fields = [
-      { name: "Component", value: "Backend API endpoint" },
-      { name: "Method", value: "DELETE" },
-      { name: "Route", value: "/social/posts/:id" },
-      {
-        name: "Request Body",
-        value: "```\n" + JSON.stringify(req.body) + "\n```",
-      },
-      { name: "Error Log", value: "```\n" + err + "\n```" },
-    ];
-    await sendWebhookMessage("error", "Error occurred in ncn-backend.", fields);
+    await reportAPIError({
+      method: "DELETE",
+      route: "/social/posts/:id",
+      reqBody: req.body,
+      error: err,
+    });
   }
 });
 

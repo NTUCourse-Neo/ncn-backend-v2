@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { sendWebhookMessage } from "@/src/utils/webhook_client";
+import { MessageTypes, sendWebhookMessage } from "@/src/utils/webhook_client";
 
 // route: "/api/v1/logs"
 const router = Router();
@@ -13,7 +13,7 @@ router.post("/error", async (req, res) => {
     });
     console.log(fields);
     await sendWebhookMessage(
-      "error",
+      MessageTypes.Error,
       "New error reported to logging api.",
       fields
     );
@@ -30,7 +30,7 @@ router.post("/info", async (req, res) => {
       return { name: key, value: req.body[key] };
     });
     await sendWebhookMessage(
-      "info",
+      MessageTypes.Info,
       "New info reported to logging api.",
       fields
     );

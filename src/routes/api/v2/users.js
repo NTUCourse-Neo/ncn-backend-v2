@@ -2,7 +2,7 @@ import { Router } from "express";
 import * as auth0_client from "@/src/utils/auth0_client";
 import prisma from "@/prisma";
 import { checkJwt } from "@/src/auth";
-import { sendWebhookMessage } from "@/src/utils/webhook_client";
+import { reportAPIError } from "@/src/utils/webhook_client";
 import { getCoursesbyIds } from "@/src/queries/courses";
 
 // route: "/api/v2/users"
@@ -37,19 +37,14 @@ router.get("/:id", checkJwt, async (req, res) => {
       res.status(200).send({ user: null, message: "User not found in DB." });
     }
   } catch (err) {
-    res.status(500).send({ user: null, message: err });
-    const fields = [
-      { name: "Component", value: "Backend API endpoint" },
-      { name: "Method", value: "GET" },
-      { name: "Route", value: "/users/:id" },
-      {
-        name: "Request Body",
-        value: "```\n" + JSON.stringify(req.body) + "\n```",
-      },
-      { name: "Error Log", value: "```\n" + err + "\n```" },
-    ];
-    await sendWebhookMessage("error", "Error occurred in ncn-backend.", fields);
     console.error(err);
+    res.status(500).send({ message: err });
+    await reportAPIError({
+      method: "GET",
+      route: "/users/:id",
+      reqBody: req.body,
+      error: err,
+    });
   }
 });
 
@@ -113,19 +108,14 @@ router.post("/", checkJwt, async (req, res) => {
       user: { db: new_user },
     });
   } catch (err) {
-    console.log(err);
-    res.status(500).send({ user: null, message: err });
-    const fields = [
-      { name: "Component", value: "Backend API endpoint" },
-      { name: "Method", value: "POST" },
-      { name: "Route", value: "/users" },
-      {
-        name: "Request Body",
-        value: "```\n" + JSON.stringify(req.body) + "\n```",
-      },
-      { name: "Error Log", value: "```\n" + err + "\n```" },
-    ];
-    await sendWebhookMessage("error", "Error occurred in ncn-backend.", fields);
+    console.error(err);
+    res.status(500).send({ message: err });
+    await reportAPIError({
+      method: "POST",
+      route: "/users",
+      reqBody: req.body,
+      error: err,
+    });
   }
 });
 
@@ -185,22 +175,14 @@ router.post("/:id/course_table", checkJwt, async (req, res) => {
           });
         }
       } catch {
-        res.status(500).send({ message: "Error in saving coursetable." });
-        const fields = [
-          { name: "Component", value: "Backend API endpoint" },
-          { name: "Method", value: "POST" },
-          { name: "Route", value: "/users/:id/course_table" },
-          {
-            name: "Request Body",
-            value: "```\n" + JSON.stringify(req.body) + "\n```",
-          },
-          { name: "Error Log", value: "```\n" + err + "\n```" },
-        ];
-        await sendWebhookMessage(
-          "error",
-          "Error occurred in ncn-backend.",
-          fields
-        );
+        console.error(err);
+        res.status(500).send({ message: err });
+        await reportAPIError({
+          method: "POST",
+          route: "/users/:id/course_table",
+          reqBody: req.body,
+          error: err,
+        });
         return;
       }
       // Add course table id to user object.
@@ -243,18 +225,13 @@ router.post("/:id/course_table", checkJwt, async (req, res) => {
     }
   } catch (err) {
     console.error(err);
-    const fields = [
-      { name: "Component", value: "Backend API endpoint" },
-      { name: "Method", value: "POST" },
-      { name: "Route", value: "/users/:id/course_table" },
-      {
-        name: "Request Body",
-        value: "```\n" + JSON.stringify(req.body) + "\n```",
-      },
-      { name: "Error Log", value: "```\n" + err + "\n```" },
-    ];
-    await sendWebhookMessage("error", "Error occurred in ncn-backend.", fields);
     res.status(500).send({ message: err });
+    await reportAPIError({
+      method: "POST",
+      route: "/users/:id/course_table",
+      reqBody: req.body,
+      error: err,
+    });
   }
 });
 
@@ -315,19 +292,14 @@ router.patch("/", checkJwt, async (req, res) => {
       message: "User updated.",
     });
   } catch (err) {
-    res.status(500).send({ message: err });
-    const fields = [
-      { name: "Component", value: "Backend API endpoint" },
-      { name: "Method", value: "PATCH" },
-      { name: "Route", value: "/users" },
-      {
-        name: "Request Body",
-        value: "```\n" + JSON.stringify(req.body) + "\n```",
-      },
-      { name: "Error Log", value: "```\n" + err + "\n```" },
-    ];
-    await sendWebhookMessage("error", "Error occurred in ncn-backend.", fields);
     console.error(err);
+    res.status(500).send({ message: err });
+    await reportAPIError({
+      method: "PATCH",
+      route: "/users",
+      reqBody: req.body,
+      error: err,
+    });
   }
 });
 
@@ -343,18 +315,14 @@ router.delete("/profile", checkJwt, async (req, res) => {
     await prisma.users.delete({ where: { id: user_id } });
     res.status(200).send({ message: "Successfully deleted user profile." });
   } catch (err) {
+    console.error(err);
     res.status(500).send({ message: err });
-    const fields = [
-      { name: "Component", value: "Backend API endpoint" },
-      { name: "Method", value: "DELETE" },
-      { name: "Route", value: "/users/profile" },
-      {
-        name: "Request Body",
-        value: "```\n" + JSON.stringify(req.body) + "\n```",
-      },
-      { name: "Error Log", value: "```\n" + err + "\n```" },
-    ];
-    await sendWebhookMessage("error", "Error occurred in ncn-backend.", fields);
+    await reportAPIError({
+      method: "DELETE",
+      route: "/users/profile",
+      reqBody: req.body,
+      error: err,
+    });
   }
 });
 
@@ -380,18 +348,14 @@ router.delete("/account", checkJwt, async (req, res) => {
       .status(200)
       .send({ message: "Successfully deleted user account and profile." });
   } catch (err) {
+    console.error(err);
     res.status(500).send({ message: err });
-    const fields = [
-      { name: "Component", value: "Backend API endpoint" },
-      { name: "Method", value: "DELETE" },
-      { name: "Route", value: "/users/account" },
-      {
-        name: "Request Body",
-        value: "```\n" + JSON.stringify(req.body) + "\n```",
-      },
-      { name: "Error Log", value: "```\n" + err + "\n```" },
-    ];
-    await sendWebhookMessage("error", "Error occurred in ncn-backend.", fields);
+    await reportAPIError({
+      method: "DELETE",
+      route: "/users/account",
+      reqBody: req.body,
+      error: err,
+    });
   }
 });
 
