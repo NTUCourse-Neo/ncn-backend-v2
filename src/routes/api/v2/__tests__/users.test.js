@@ -66,7 +66,7 @@ describe("API /v2/users", () => {
 
     it("should block a request with unmatched email", async () => {
       const { email } = StubData.getUnregisteredData();
-      const token = StubData.getNormalUserToken();
+      const token = StubData.getFirstNormalUserToken();
 
       const res = await request(app)
         .post(`/api/v2/users`)
@@ -190,7 +190,7 @@ describe("API /v2/users", () => {
     });
 
     it("should block users to update other's user data", async () => {
-      const normalUserToken = StubData.getNormalUserToken();
+      const normalUserToken = StubData.getFirstNormalUserToken();
 
       const res = await request(app)
         .patch(`/api/v2/users`)

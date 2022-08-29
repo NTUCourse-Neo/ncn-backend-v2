@@ -5,7 +5,7 @@ import { app } from "@/src/express";
 describe("API /v2/courses", () => {
   describe("GET /", () => {
     it("should return all courses", async () => {
-      const token = StubData.getAdminToken();
+      const token = StubData.getFirstAdminToken();
       const res = await request(app)
         .get("/api/v2/courses")
         .set("Authorization", `Bearer ${token}`);

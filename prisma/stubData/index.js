@@ -96,19 +96,19 @@ class StubDataContainer {
     return this._usersById[userId];
   }
 
-  getAdminToken() {
+  getFirstAdminToken() {
     return this.getTokenByUserId(this.admins[0]);
   }
 
-  getNormalUserToken() {
+  getFirstNormalUserToken() {
     return this.getTokenByUserId(this.normalUsers[0]);
   }
 
-  getGuestTable() {
+  getFirstGuestTable() {
     return this._guestTables[0];
   }
 
-  getLinkedTable() {
+  getFirstLinkedTable() {
     return this._linkedTables[0];
   }
 

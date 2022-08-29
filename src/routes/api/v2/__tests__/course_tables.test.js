@@ -7,7 +7,7 @@ import prisma from "@/prisma";
 describe("API /v2/course_tables", () => {
   describe("GET /", () => {
     it("should return all tables", async () => {
-      const token = StubData.getAdminToken();
+      const token = StubData.getFirstAdminToken();
 
       const res = await request(app)
         .get("/api/v2/course_tables")
@@ -75,7 +75,7 @@ describe("API /v2/course_tables", () => {
 
   describe("GET /:id", () => {
     it("should return the selected table", async () => {
-      const guestTable = StubData.getGuestTable();
+      const guestTable = StubData.getFirstGuestTable();
       const res = await request(app).get(
         `/api/v2/course_tables/${guestTable.id}`
       );
@@ -89,7 +89,7 @@ describe("API /v2/course_tables", () => {
     });
 
     it("should allow owner to get their tables", async () => {
-      const linkedTable = StubData.getLinkedTable();
+      const linkedTable = StubData.getFirstLinkedTable();
       const token = StubData.getTokenByUserId(linkedTable.user_id);
       const res = await request(app)
         .get(`/api/v2/course_tables/${linkedTable.id}`)
@@ -104,7 +104,7 @@ describe("API /v2/course_tables", () => {
     });
 
     it("should block guests to get other's tables", async () => {
-      const linkedTable = StubData.getLinkedTable();
+      const linkedTable = StubData.getFirstLinkedTable();
       const res = await request(app).get(
         `/api/v2/course_tables/${linkedTable.id}`
       );
@@ -113,7 +113,7 @@ describe("API /v2/course_tables", () => {
     });
 
     it("should block users to get other's tables", async () => {
-      const linkedTable = StubData.getLinkedTable();
+      const linkedTable = StubData.getFirstLinkedTable();
       const anotherNormalUser = StubData.users.find(
         (u) => !StubData.isUserAdmin(u.id) && u.id !== linkedTable.user_id
       );
