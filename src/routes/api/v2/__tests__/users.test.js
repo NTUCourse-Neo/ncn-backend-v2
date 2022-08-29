@@ -112,4 +112,273 @@ describe("API /v2/users", () => {
       });
     });
   });
+
+  describe("PATCH /", () => {
+    const { user_id: id, name, email, token } = StubData.getUnregisteredData();
+    const userTemplate = { id, name, email, year: 0 };
+    const newUserYear = 5;
+
+    beforeEach(async () => {
+      await prisma.users.create({ data: userTemplate });
+    });
+
+    it("should return the updated user", async () => {
+      const res = await request(app)
+        .patch(`/api/v2/users`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ user: { year: newUserYear } });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.user?.db?.id).toBe(id);
+      expect(res.body.user?.db?.name).toBe(name);
+      expect(res.body.user?.db?.email).toBe(email);
+      expect(res.body.user?.db?.year).toBe(newUserYear);
+
+      // TODO: test other fields
+    });
+
+    describe("should block a request with invalid fields", () => {
+      const invalidFileds = {
+        id: "test_id",
+        email: "test@gmail.com",
+        student_id: "B01234567",
+      };
+
+      it.each(Object.entries(invalidFileds))(
+        "{ %p: %p }",
+        async (key, value) => {
+          const res = await request(app)
+            .patch(`/api/v2/users`)
+            .set("Authorization", `Bearer ${token}`)
+            .send({ user: { [key]: value } });
+
+          expect(res.statusCode).toBe(400);
+        }
+      );
+    });
+
+    describe("should block a request with wrong data type", () => {
+      const wrongFields = {
+        name: 0,
+        year: "1",
+        major: 0,
+        d_major: 0,
+        minors: 0,
+        languages: 0,
+        favorites: 0,
+      };
+
+      it.each(Object.entries(wrongFields))("{ %p: %p }", async (key, value) => {
+        const res = await request(app)
+          .patch(`/api/v2/users`)
+          .set("Authorization", `Bearer ${token}`)
+          .send({ user: { [key]: value } });
+
+        console.log(res.body);
+        expect(res.statusCode).toBe(400);
+      });
+    });
+
+    it("should block guests to update other's user data", async () => {
+      const res = await request(app)
+        .patch(`/api/v2/users`)
+        .send({ user: { year: newUserYear } });
+
+      expect(res.statusCode).toBe(401);
+      const resUser = await prisma.users.findUnique({ where: { id } });
+      expect(resUser?.year).toBe(userTemplate.year);
+    });
+
+    it("should block users to update other's user data", async () => {
+      const normalUserToken = StubData.getNormalUserToken();
+
+      const res = await request(app)
+        .patch(`/api/v2/users`)
+        .set("Authorization", `Bearer ${normalUserToken}`)
+        .send({ user: { year: newUserYear } });
+
+      expect(res.statusCode).toBe(403);
+      const resUser = await prisma.users.findUnique({ where: { id } });
+      expect(resUser?.year).toBe(userTemplate.year);
+    });
+
+    it("should update users in db", async () => {
+      const res = await request(app)
+        .patch(`/api/v2/users`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ user: { year: newUserYear } });
+
+      expect(res.statusCode).toBe(200);
+      const resUser = await prisma.users.findUnique({ where: { id } });
+      expect(resUser?.year).toBe(newUserYear);
+
+      // TODO: test other fields
+    });
+
+    afterEach(async () => {
+      await prisma.users.deleteMany({
+        where: { id: StubData.getUnregisteredData().user_id },
+      });
+    });
+  });
+
+  // NOTE: skipped `POST /v2/users/:id/course_table` since it should be removed in the next version
+
+  describe("DELETE /:type", () => {
+    const { user_id: id, name, email, token } = StubData.getUnregisteredData();
+    const userTemplate = { id, name, email };
+
+    it("should block a request with unknown target type", async () => {
+      const res = await request(app)
+        .delete(`/api/v2/users/unknown_type`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(res.statusCode).toBe(404);
+    });
+
+    it.each(["account", "profile"])(
+      "should block guests to delete their data",
+      async (type) => {
+        const res = await request(app)
+          .delete(`/api/v2/users/${type}`)
+          .set("Authorization", `Bearer ${token}`);
+
+        expect(res.statusCode).toBe(401);
+      }
+    );
+
+    it("should delete the user in db", async () => {
+      await prisma.users.create({ data: userTemplate });
+
+      const res = await request(app)
+        .delete(`/api/v2/users`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(res.statusCode).toBe(200);
+
+      const resUser = await prisma.users.findUnique({ where: { id } });
+      expect(resUser).toBe(null);
+    });
+
+    // TODO: test deleting in auth0 api (`DELETE /account`)
+
+    afterEach(async () => {
+      await prisma.users.deleteMany({
+        where: { id },
+      });
+    });
+  });
+
+  describe("PUT /favorites/:course_id", () => {
+    const { user_id: id, name, email, token } = StubData.getUnregisteredData();
+    const userTemplate = { id, name, email };
+    const newCourseId = StubData.courses[0].id;
+
+    beforeEach(async () => {
+      await prisma.users.create({ data: userTemplate });
+    });
+
+    it("should return the updated favorite courses", async () => {
+      const res = await request(app)
+        .put(`/api/v2/users/favorites/${newCourseId}`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.favorites?.length).toBe(1);
+      expect(res.body.favorites?.[0]?.id).toBe(newCourseId);
+    });
+
+    it("should block a request with unknown course id", async () => {
+      const res = await request(app)
+        .put(`/api/v2/users/favorites/unknown_course_id`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(res.statusCode).toBe(400);
+    });
+
+    it("should block a request with course id already in favorites", async () => {
+      await prisma.users.update({
+        where: { id },
+        data: { favorites: [newCourseId] },
+      });
+
+      const res = await request(app)
+        .put(`/api/v2/users/favorites/${newCourseId}`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(res.statusCode).toBe(400);
+    });
+
+    it("should update favorite courses in db", async () => {
+      const res = await request(app)
+        .put(`/api/v2/users/favorites/${newCourseId}`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(res.statusCode).toBe(200);
+
+      const resUser = await prisma.users.findUnique({ where: { id } });
+      expect(resUser?.favorites?.length).toBe(1);
+      expect(resUser?.favorites?.[0]).toBe(newCourseId);
+    });
+
+    afterEach(async () => {
+      await prisma.users.deleteMany({
+        where: { id },
+      });
+    });
+  });
+
+  describe("DELETE /favorites/:course_id", () => {
+    const { user_id: id, name, email, token } = StubData.getUnregisteredData();
+    const newCourseId = StubData.courses[0].id;
+    const userTemplate = { id, name, email, favorites: [newCourseId] };
+
+    beforeEach(async () => {
+      await prisma.users.create({ data: userTemplate });
+    });
+
+    it("should return the updated favorite courses", async () => {
+      const res = await request(app)
+        .delete(`/api/v2/users/favorites/${newCourseId}`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.favorites?.length).toBe(0);
+    });
+
+    it("should block a request with unknown course id", async () => {
+      const res = await request(app)
+        .delete(`/api/v2/users/favorites/unknown_course_id`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(res.statusCode).toBe(400);
+    });
+
+    it("should block a request with course id not in favorites", async () => {
+      const secondCourseId = StubData.courses[1].id;
+
+      const res = await request(app)
+        .delete(`/api/v2/users/favorites/${secondCourseId}`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(res.statusCode).toBe(400);
+    });
+
+    it("should update favorite courses in db", async () => {
+      const res = await request(app)
+        .delete(`/api/v2/users/favorites/${newCourseId}`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(res.statusCode).toBe(200);
+
+      const resUser = await prisma.users.findUnique({ where: { id } });
+      expect(resUser?.favorites?.length).toBe(0);
+    });
+
+    afterEach(async () => {
+      await prisma.users.deleteMany({
+        where: { id },
+      });
+    });
+  });
 });
