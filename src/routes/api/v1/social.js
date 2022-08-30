@@ -3,8 +3,8 @@ import { v4 as uuidv4 } from "uuid";
 import prisma from "@/prisma";
 import Social_posts from "@/src/models/Social_posts";
 import Post_reports from "@/src/models/Post_reports";
+import { checkJwt } from "@/src/middlewares/auth";
 import { MessageTypes, reportAPIError } from "@/src/utils/webhook_client";
-import { checkJwt } from "@/src/auth";
 
 // route: "/api/v1/social"
 const router = Router();

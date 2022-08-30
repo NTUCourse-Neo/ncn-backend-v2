@@ -1,6 +1,6 @@
 import { Router } from "express";
 import axios from "axios";
-import { checkJwt } from "@/src/auth";
+import { checkJwt } from "@/src/middlewares/auth";
 import { Prisma } from "@prisma/client";
 import prisma from "@/prisma";
 import { reportAPIError } from "@/src/utils/webhook_client";

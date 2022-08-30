@@ -1,7 +1,7 @@
 import { Router } from "express";
 import prisma from "@/prisma";
-import { checkJwt } from "@/src/auth";
-import * as auth0_client from "@/src/utils/auth0_client";
+import { checkJwt } from "@/src/middlewares/auth";
+import { isAdmin } from "@/src/utils/auth0_client";
 import { reportAPIError } from "@/src/utils/webhook_client";
 import { getCoursesbyIds } from "@/src/queries/courses";
 
@@ -9,15 +9,9 @@ import { getCoursesbyIds } from "@/src/queries/courses";
 const router = Router();
 const active_semester = process.env.SEMESTER;
 
-const check_is_admin = async (user_id) => {
-  const token = await auth0_client.get_token();
-  const user_roles = await auth0_client.get_user_meta_roles(user_id, token);
-  return user_roles.includes("admin");
-};
-
 // API version: 2.0
 router.get("/", checkJwt, async (req, res) => {
-  if (!(await check_is_admin(req.user.sub))) {
+  if (!(await isAdmin(req.user.sub))) {
     res.status(403).send({
       course_table: null,
       message: "You are not authorized to get this data.",
@@ -225,7 +219,7 @@ router.patch("/:id", async (req, res) => {
 
 // API version: 2.0
 router.delete("/:id", checkJwt, async (req, res) => {
-  if (!(await check_is_admin(req.user.sub))) {
+  if (!(await isAdmin(req.user.sub))) {
     res.status(403).send({
       course_table: null,
       message: "You are not authorized to get this data.",

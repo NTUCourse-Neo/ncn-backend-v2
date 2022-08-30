@@ -1,7 +1,7 @@
 import { Router } from "express";
-import * as auth0_client from "@/src/utils/auth0_client";
 import prisma from "@/prisma";
-import { checkJwt } from "@/src/auth";
+import { checkJwt } from "@/src/middlewares/auth";
+import auth0Client from "@/src/utils/auth0_client";
 import { reportAPIError } from "@/src/utils/webhook_client";
 import { getCoursesbyIds } from "@/src/queries/courses";
 
@@ -65,8 +65,7 @@ router.post("/", checkJwt, async (req, res) => {
         .send({ message: "email is already registered", user: null });
       return;
     }
-    const token = await auth0_client.get_token();
-    const auth0_users = await auth0_client.get_user_by_email(email, token);
+    const auth0_users = auth0Client.getUsersByEmail(email);
     let auth0_user;
     if (auth0_users.length === 0) {
       res.status(400).send({ message: "email is not registered", user: null });
@@ -336,14 +335,13 @@ router.delete("/account", checkJwt, async (req, res) => {
       res.status(400).send({ message: "User profile data is not in DB." });
       return;
     }
-    const token = await auth0_client.get_token();
-    const auth0_user = await auth0_client.get_user_by_id(user_id, token);
+    const auth0_user = await auth0Client.getUser({ id: user_id });
     if (!auth0_user) {
       res.status(400).send({ message: "User is not registered in Auth0" });
       return;
     }
     await prisma.users.delete({ where: { id: user_id } });
-    await auth0_client.delete_user_by_id(user_id, token);
+    await auth0Client.deleteUser({ id: user_id });
     res
       .status(200)
       .send({ message: "Successfully deleted user account and profile." });
