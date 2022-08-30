@@ -1,6 +1,7 @@
 import { Router } from "express";
 import axios from "axios";
 import { checkJwt } from "@/src/middlewares/auth";
+import checkIsAdmin from "@/src/middlewares/checkIsAdmin";
 import { Prisma } from "@prisma/client";
 import prisma from "@/prisma";
 import { reportAPIError } from "@/src/utils/webhook_client";
@@ -15,7 +16,7 @@ import {
 const router = Router();
 
 // API version: 2.0
-router.get("/", async (req, res) => {
+router.get("/", checkJwt, checkIsAdmin, async (req, res) => {
   try {
     const courses = await prisma.courses.findMany({
       include: course_include_all,

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import prisma from "@/prisma";
 import { checkJwt } from "@/src/middlewares/auth";
-import auth0Client from "@/src/utils/auth0_client";
+import auth0Client from "@/src/utils/auth0Client";
 import { reportAPIError } from "@/src/utils/webhook_client";
 import { getCoursesbyIds } from "@/src/queries/courses";
 
