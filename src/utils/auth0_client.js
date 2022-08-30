@@ -7,9 +7,4 @@ const auth0Client = new ManagementClient({
   clientSecret: process.env.AUTH0_CLIENT_SECRET,
 });
 
-export async function isAdmin(id) {
-  const user = await auth0Client.getUser({ id });
-  return !!user?.app_metadata?.roles?.includes("admin");
-}
-
 export default auth0Client;

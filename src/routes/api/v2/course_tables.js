@@ -1,7 +1,7 @@
 import { Router } from "express";
 import prisma from "@/prisma";
 import { checkJwt } from "@/src/middlewares/auth";
-import { isAdmin } from "@/src/utils/auth0_client";
+import checkIsAdmin from "@/src/middlewares/checkIsAdmin";
 import { reportAPIError } from "@/src/utils/webhook_client";
 import { getCoursesbyIds } from "@/src/queries/courses";
 
@@ -10,14 +10,7 @@ const router = Router();
 const active_semester = process.env.SEMESTER;
 
 // API version: 2.0
-router.get("/", checkJwt, async (req, res) => {
-  if (!(await isAdmin(req.user.sub))) {
-    res.status(403).send({
-      course_table: null,
-      message: "You are not authorized to get this data.",
-    });
-    return;
-  }
+router.get("/", checkJwt, checkIsAdmin, async (req, res) => {
   let result;
   try {
     result = await prisma.course_tables.findMany();
@@ -218,14 +211,7 @@ router.patch("/:id", async (req, res) => {
 });
 
 // API version: 2.0
-router.delete("/:id", checkJwt, async (req, res) => {
-  if (!(await isAdmin(req.user.sub))) {
-    res.status(403).send({
-      course_table: null,
-      message: "You are not authorized to get this data.",
-    });
-    return;
-  }
+router.delete("/:id", checkJwt, checkIsAdmin, async (req, res) => {
   const course_table_id = req.params.id;
   try {
     await prisma.course_tables.delete({ where: { id: course_table_id } });

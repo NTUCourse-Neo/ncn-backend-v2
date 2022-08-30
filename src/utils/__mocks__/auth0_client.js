@@ -19,14 +19,6 @@ async function deleteUser({ id }) {
   return null;
 }
 
-export async function isAdmin(id) {
-  if (id) {
-    return StubData.isUserAdmin(id);
-  } else {
-    throw new Error(`No user id is given.`);
-  }
-}
-
 export default {
   getUser,
   getUsersByEmail,
