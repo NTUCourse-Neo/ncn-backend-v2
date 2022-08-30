@@ -4,7 +4,7 @@ import prisma from "@/prisma";
 import Social_posts from "@/src/models/Social_posts";
 import Post_reports from "@/src/models/Post_reports";
 import { checkJwt } from "@/src/middlewares/auth";
-import { MessageTypes, reportAPIError } from "@/src/utils/webhook_client";
+import { MessageTypes, sendWebhookMessage } from "@/src/utils/webhook_client";
 
 // route: "/api/v1/social"
 const router = Router();
@@ -20,7 +20,7 @@ const get_self_vote_status = (post, user_id) => {
 };
 
 // API version: 1.0
-router.get("/posts/:id/", checkJwt, async (req, res) => {
+router.get("/posts/:id/", checkJwt, async (req, res, next) => {
   // get course social posts by post id
   try {
     const user_id = req.user.sub;
@@ -46,19 +46,12 @@ router.get("/posts/:id/", checkJwt, async (req, res) => {
       },
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: err });
-    await reportAPIError({
-      method: "GET",
-      route: "/social/posts/:id",
-      reqBody: req.body,
-      error: err,
-    });
+    next(err);
   }
 });
 
 // API version: 1.0
-router.get("/courses/:id/posts", checkJwt, async (req, res) => {
+router.get("/courses/:id/posts", checkJwt, async (req, res, next) => {
   // get course social posts by course id
   try {
     const user_id = req.user.sub;
@@ -85,19 +78,12 @@ router.get("/courses/:id/posts", checkJwt, async (req, res) => {
       }),
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: err });
-    await reportAPIError({
-      method: "GET",
-      route: "/social/courses/:id/posts",
-      reqBody: req.body,
-      error: err,
-    });
+    next(err);
   }
 });
 
 // API version: 1.0
-router.post("/courses/:id/posts", checkJwt, async (req, res) => {
+router.post("/courses/:id/posts", checkJwt, async (req, res, next) => {
   // create course social posts by course id
   try {
     const user_id = req.user.sub;
@@ -148,19 +134,12 @@ router.post("/courses/:id/posts", checkJwt, async (req, res) => {
       fields
     );
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: err });
-    await reportAPIError({
-      method: "POST",
-      route: "/social/courses/:id/posts",
-      reqBody: req.body,
-      error: err,
-    });
+    next(err);
   }
 });
 
 // API version: 1.0
-router.post("/posts/:id/report", checkJwt, async (req, res) => {
+router.post("/posts/:id/report", checkJwt, async (req, res, next) => {
   // report a post by post id
   try {
     const user_id = req.user.sub;
@@ -210,19 +189,12 @@ router.post("/posts/:id/report", checkJwt, async (req, res) => {
       fields
     );
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: err });
-    await reportAPIError({
-      method: "POST",
-      route: "/social/posts/:id/report",
-      reqBody: req.body,
-      error: err,
-    });
+    next(err);
   }
 });
 
 // API version: 1.0
-router.patch("/posts/:id/votes", checkJwt, async (req, res) => {
+router.patch("/posts/:id/votes", checkJwt, async (req, res, next) => {
   // like or dislike a social post by post id
   // type: like (1), dislike (-1), cancel (0)
   try {
@@ -274,19 +246,12 @@ router.patch("/posts/:id/votes", checkJwt, async (req, res) => {
     await Social_posts.findByIdAndUpdate({ _id: post_id }, post);
     res.status(200).send({ message: "Vote updated." });
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: err });
-    await reportAPIError({
-      method: "PATCH",
-      route: "/social/posts/:id/votes",
-      reqBody: req.body,
-      error: err,
-    });
+    next(err);
   }
 });
 
 // API version: 1.0
-router.delete("/posts/:id", checkJwt, async (req, res) => {
+router.delete("/posts/:id", checkJwt, async (req, res, next) => {
   // delete a social post by post id
   try {
     const user_id = req.user.sub;
@@ -303,14 +268,7 @@ router.delete("/posts/:id", checkJwt, async (req, res) => {
     await Social_posts.deleteOne({ _id: post_id });
     res.status(200).send({ message: "Post deleted." });
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: err });
-    await reportAPIError({
-      method: "DELETE",
-      route: "/social/posts/:id",
-      reqBody: req.body,
-      error: err,
-    });
+    next(err);
   }
 });
 

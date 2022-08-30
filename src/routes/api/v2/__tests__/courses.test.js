@@ -12,7 +12,7 @@ describe("API /v2/courses", () => {
 
       expect(res.statusCode).toBe(200);
       expect(res.body.courses.length).toBe(StubData.courses.length);
-      expect(res.body.courses.map((c) => c.name)).toBe(
+      expect(res.body.courses.map((c) => c.name)).toEqual(
         StubData.courses.map((c) => c.name)
       );
     });

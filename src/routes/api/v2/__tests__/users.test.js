@@ -117,6 +117,7 @@ describe("API /v2/users", () => {
     const { user_id: id, name, email, token } = StubData.getUnregisteredData();
     const userTemplate = { id, name, email, year: 0 };
     const newUserYear = 5;
+    const newMajor = StubData.departments[0].id;
 
     beforeEach(async () => {
       await prisma.users.create({ data: userTemplate });
@@ -206,11 +207,12 @@ describe("API /v2/users", () => {
       const res = await request(app)
         .patch(`/api/v2/users`)
         .set("Authorization", `Bearer ${token}`)
-        .send({ user: { year: newUserYear } });
+        .send({ user: { year: newUserYear, major: newMajor } });
 
       expect(res.statusCode).toBe(200);
       const resUser = await prisma.users.findUnique({ where: { id } });
       expect(resUser?.year).toBe(newUserYear);
+      expect(resUser?.major).toBe(newMajor);
 
       // TODO: test other fields
     });

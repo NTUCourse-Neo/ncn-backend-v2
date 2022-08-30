@@ -2,7 +2,6 @@ import { Router } from "express";
 import prisma from "@/prisma";
 import { checkJwt } from "@/src/middlewares/auth";
 import checkIsAdmin from "@/src/middlewares/checkIsAdmin";
-import { reportAPIError } from "@/src/utils/webhook_client";
 import { getCoursesbyIds } from "@/src/queries/courses";
 
 // route: "/api/v2/course_tables"
@@ -10,7 +9,7 @@ const router = Router();
 const active_semester = process.env.SEMESTER;
 
 // API version: 2.0
-router.get("/", checkJwt, checkIsAdmin, async (req, res) => {
+router.get("/", checkJwt, checkIsAdmin, async (req, res, next) => {
   let result;
   try {
     result = await prisma.course_tables.findMany();
@@ -20,19 +19,12 @@ router.get("/", checkJwt, checkIsAdmin, async (req, res) => {
     });
     console.log("Get full course table package.");
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: err });
-    await reportAPIError({
-      method: "GET",
-      route: "/course_tables",
-      reqBody: req.body,
-      error: err,
-    });
+    next(err);
   }
 });
 
 // API version: 2.0
-router.get("/:id", async (req, res) => {
+router.get("/:id", async (req, res, next) => {
   let course_table_id = req.params.id;
   let result;
   try {
@@ -64,19 +56,12 @@ router.get("/:id", async (req, res) => {
         .send({ course_table: result, message: "get course table" });
     }
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: err });
-    await reportAPIError({
-      method: "GET",
-      route: "/course_tables/:id",
-      reqBody: req.body,
-      error: err,
-    });
+    next(err);
   }
 });
 
 // API version: 2.0
-router.post("/", async (req, res) => {
+router.post("/", async (req, res, next) => {
   // TODO: spawn uuid in backend instead of using frontend input
   const course_table_id = req.body.id;
   const course_table_name = req.body.name;
@@ -118,19 +103,12 @@ router.post("/", async (req, res) => {
       });
     }
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: err });
-    await reportAPIError({
-      method: "POST",
-      route: "/course_tables/",
-      reqBody: req.body,
-      error: err,
-    });
+    next(err);
   }
 });
 
 // API version: 2.0
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", async (req, res, next) => {
   const _id = req.params.id;
   const name = req.body.name;
   const user_id = req.body.user_id;
@@ -199,33 +177,19 @@ router.patch("/:id", async (req, res) => {
       message: "Course table has been patched",
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: err });
-    await reportAPIError({
-      method: "PATCH",
-      route: "/course_tables/:id",
-      reqBody: req.body,
-      error: err,
-    });
+    next(err);
   }
 });
 
 // API version: 2.0
-router.delete("/:id", checkJwt, checkIsAdmin, async (req, res) => {
+router.delete("/:id", checkJwt, checkIsAdmin, async (req, res, next) => {
   const course_table_id = req.params.id;
   try {
     await prisma.course_tables.delete({ where: { id: course_table_id } });
     res.status(200).send({ message: "delete course table successfully." });
     console.log("delete course table successfully.");
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: err });
-    await reportAPIError({
-      method: "DELETE",
-      route: "/course_tables/:id",
-      reqBody: req.body,
-      error: err,
-    });
+    next(err);
   }
 });
 

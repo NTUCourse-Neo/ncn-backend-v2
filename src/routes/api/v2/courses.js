@@ -4,7 +4,6 @@ import { checkJwt } from "@/src/middlewares/auth";
 import checkIsAdmin from "@/src/middlewares/checkIsAdmin";
 import { Prisma } from "@prisma/client";
 import prisma from "@/prisma";
-import { reportAPIError } from "@/src/utils/webhook_client";
 import {
   course_include_all,
   course_post_process,
@@ -16,7 +15,7 @@ import {
 const router = Router();
 
 // API version: 2.0
-router.get("/", checkJwt, checkIsAdmin, async (req, res) => {
+router.get("/", checkJwt, checkIsAdmin, async (req, res, next) => {
   try {
     const courses = await prisma.courses.findMany({
       include: course_include_all,
@@ -27,19 +26,12 @@ router.get("/", checkJwt, checkIsAdmin, async (req, res) => {
     });
     console.log("Get full courses package.");
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: err });
-    await reportAPIError({
-      method: "GET",
-      route: "/courses/",
-      reqBody: req.body,
-      error: err,
-    });
+    next(err);
   }
 });
 
 // API version: 2.0
-router.post("/search", async (req, res) => {
+router.post("/search", async (req, res, next) => {
   const { keyword, fields, filter, batch_size, offset, semester } = req.body;
   const valid_keyword_fields = [
     "name",
@@ -96,18 +88,12 @@ router.post("/search", async (req, res) => {
       res.status(200).send({ courses: [], total_count: 0 });
     }
   } catch (err) {
-    res.status(500).send({ message: err });
-    await reportAPIError({
-      method: "POST",
-      route: "/courses/search",
-      reqBody: req.body,
-      error: err,
-    });
+    next(err);
   }
 });
 
 // API version: 2.0
-router.post("/ids", async (req, res) => {
+router.post("/ids", async (req, res, next) => {
   const { ids, sorted } = req.body;
   if (ids.length === 0) {
     console.log("No ids provided.");
@@ -127,19 +113,12 @@ router.post("/ids", async (req, res) => {
       total_count: courses.length,
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: err });
-    await reportAPIError({
-      method: "POST",
-      route: "/courses/ids",
-      reqBody: req.body,
-      error: err,
-    });
+    next(err);
   }
 });
 
 // API version: 2.0
-router.get("/:id", async (req, res) => {
+router.get("/:id", async (req, res, next) => {
   try {
     const course_id = req.params.id;
     const course = await prisma.courses.findUnique({
@@ -155,21 +134,14 @@ router.get("/:id", async (req, res) => {
       message: "Successfully retrieved course.",
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: err });
-    await reportAPIError({
-      method: "GET",
-      route: "/courses/:id",
-      reqBody: req.body,
-      error: err,
-    });
+    next(err);
   }
 });
 
 // Live API below: auth token is required
 
 // API version: 2.0
-router.get("/:id/enrollinfo", checkJwt, async (req, res) => {
+router.get("/:id/enrollinfo", checkJwt, async (req, res, next) => {
   try {
     const course_id = req.params.id;
     let course_enroll_data;
@@ -206,19 +178,12 @@ router.get("/:id/enrollinfo", checkJwt, async (req, res) => {
       message: "Successfully retrieved course enroll info.",
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: err });
-    await reportAPIError({
-      method: "GET",
-      route: "/courses/:id/enrollinfo",
-      reqBody: req.body,
-      error: err,
-    });
+    next(err);
   }
 });
 
 // API version: 2.0
-router.get("/:id/rating", checkJwt, async (req, res) => {
+router.get("/:id/rating", checkJwt, async (req, res, next) => {
   try {
     const course_id = req.params.id;
     let course_rating_data;
@@ -255,19 +220,12 @@ router.get("/:id/rating", checkJwt, async (req, res) => {
       message: "Successfully retrieved course rating info.",
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: err });
-    await reportAPIError({
-      method: "GET",
-      route: "/courses/:id/rating",
-      reqBody: req.body,
-      error: err,
-    });
+    next(err);
   }
 });
 
 // API version: 2.0
-router.get("/:id/ptt/:board", checkJwt, async (req, res) => {
+router.get("/:id/ptt/:board", checkJwt, async (req, res, next) => {
   try {
     const course_id = req.params.id;
     const data_type = req.params.board == "review" ? 0 : 1;
@@ -316,19 +274,12 @@ router.get("/:id/ptt/:board", checkJwt, async (req, res) => {
       message: "Successfully retrieved course ptt post info.",
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: err });
-    await reportAPIError({
-      method: "GET",
-      route: "/courses/:id/ptt/:board",
-      reqBody: req.body,
-      error: err,
-    });
+    next(err);
   }
 });
 
 // API version: 2.0
-router.get("/:id/syllabus", async (req, res) => {
+router.get("/:id/syllabus", async (req, res, next) => {
   try {
     const course_id = req.params.id;
     let syllabus_data;
@@ -372,14 +323,7 @@ router.get("/:id/syllabus", async (req, res) => {
       message: "Successfully retrieved course syllabus.",
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: err });
-    await reportAPIError({
-      method: "GET",
-      route: "/courses/:id/syllabus",
-      reqBody: req.body,
-      error: err,
-    });
+    next(err);
   }
 });
 

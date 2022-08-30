@@ -70,24 +70,3 @@ export async function sendWebhookMessage(messageType, description, fields) {
     console.error(err);
   }
 }
-
-export async function reportError(fields) {
-  await sendWebhookMessage(
-    MessageTypes.Error,
-    "Error occurred in ncn-backend.",
-    fields
-  );
-}
-
-export async function reportAPIError({ method, route, reqBody, error }) {
-  await reportError([
-    { name: "Component", value: "Backend API endpoint" },
-    { name: "Method", value: method },
-    { name: "Route", value: route },
-    {
-      name: "Request Body",
-      value: "```\n" + JSON.stringify(reqBody) + "\n```",
-    },
-    { name: "Error Log", value: "```\n" + error + "\n```" },
-  ]);
-}

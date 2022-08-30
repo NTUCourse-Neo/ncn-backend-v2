@@ -95,18 +95,19 @@ model courses {
 }
 
 model users {
-  id                                 String          @id
-  name                               String
-  email                              String
-  student_id                         String?
-  year                               Int             @default(0)
-  major                              String?
-  d_major                            String?
-  minors                             String[]
-  languages                          String[]
-  favorites                          String[]
-  course_tables                      String[]
-  history_courses                    String[]
+  id              String   @id
+  name            String
+  email           String
+  student_id      String?
+  year            Int      @default(0)
+  major           String?
+  d_major         String?
+  minors          String[]
+  languages       String[]
+  favorites       String[]
+  course_tables   String[]
+  history_courses String[]
+
   d_major_dept                       departments?    @relation("departmentsTousers_d_major", fields: [d_major], references: [id], onDelete: Restrict, onUpdate: Restrict)
   major_dept                         departments?    @relation("departmentsTousers_major", fields: [major], references: [id], onDelete: Restrict, onUpdate: Restrict)
   course_tables_course_tablesTousers course_tables[]
