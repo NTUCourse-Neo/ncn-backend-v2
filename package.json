@@ -42,7 +42,6 @@
     "*.{js,jsx,ts,tsx}": "eslint --cache --fix"
   },
   "devDependencies": {
-    "@babel/plugin-transform-runtime": "^7.18.10",
     "eslint": "^8.0.1",
     "eslint-config-prettier": "^8.5.0",
     "eslint-config-standard": "^17.0.0",
