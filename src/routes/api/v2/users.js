@@ -57,7 +57,7 @@ router.post("/", checkJwt, async (req, res, next) => {
         .send({ message: "email is already registered", user: null });
       return;
     }
-    const auth0_users = auth0Client.getUsersByEmail(email);
+    const auth0_users = await auth0Client.getUsersByEmail(email);
     let auth0_user;
     if (auth0_users.length === 0) {
       res.status(400).send({ message: "email is not registered", user: null });
