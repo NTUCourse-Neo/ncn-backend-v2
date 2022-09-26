@@ -1,0 +1,345 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URL")
+}
+
+/// 課程檔
+model Course {
+  id              String           @id @db.Uuid
+  /// 流水號, 可能無值
+  serial          String?          @db.VarChar(5)
+  /// 課號
+  identifier      String           @db.VarChar(10) // TODO: remove?
+  /// 課程識別碼
+  code            String           @db.VarChar(10)
+  /// 學年期
+  semester        String           @db.VarChar(5)
+  /// 班次
+  class           String           @db.VarChar(3)
+  /// 中文課名
+  nameZh          String           @db.VarChar(48)
+  /// 英文課名
+  nameEn          String           @db.VarChar(100)
+  /// 課程類別
+  type            CourseType
+  /// 通識領域當 `type === General` 時才使用
+  generalMark     String?
+  // 必選修，當 `type === Normal` 時才使用，來自舊系統 `sel_code` and `co_rep`
+  compulsory      CourseCompulsory
+  /// 全學年制, 舊系統為1 為全學年制，2為半學年制 (forh)
+  length          CourseLength
+  /// 學分
+  credits         Decimal
+  /// 中文備註
+  commentZhTw     String?
+  /// 英文備註
+  commentEn       String?          @db.VarChar(254)
+  /// 通識課程配有TA，非通識課程為null，來自舊系統NOL table com
+  isTaAssigned    Boolean?
+  /// 英語授課，來自舊系統NOL table english
+  isEnglishTaught Boolean
+  /// 可充當外文領域
+  asForeign       Boolean?
+  /// 課程大綱網址，來自舊系統 NOL table `ntu_course`
+  url             String?          @db.VarChar(200)
+  /// 密集課程的週次
+  intensiveWeeks  Int[]            @default([])
+
+  // TODO: 完成以下 column 命名
+  studentNumber Int
+  // 外系人數 Int
+  // 外校人數 Int
+  // 加選人數 Int
+
+  // TODO: 是否保留以下 column?
+  /// 實習分組, 0~4
+  groupId                Int // grpno
+  /// 系所縮寫，舊系統時用於產生課號，來自 `dpt_abbr`
+  departmentAbbreviation String @db.VarChar(6)
+  /// 課程流水號，舊系統時用於產生課號，來自 `cou_teacno`
+  codeSerial             String @db.VarChar(4)
+
+  // 1-1
+  practiceGroup PracticeGroup?
+
+  // 1-n
+  schedules Schedule[]
+  limits    Limit[]
+
+  // n-1
+  gradeId            String
+  /// 開課對象年級，系所查詢時使用，來自舊系統 `year`
+  grade              Grade      @relation(fields: [gradeId], references: [id])
+  targetDepartmentId String
+  targetDepartment   Department @relation(fields: [targetDepartmentId], references: [id])
+  /// 教師代碼
+  teacherId          String
+  teacher            Teacher    @relation(fields: [teacherId], references: [id])
+
+  // m-n
+  prerequisiteOf Course[] @relation("coursePrerequisite")
+  prerequisites  Course[] @relation("coursePrerequisite")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([semester, id])
+}
+
+model Schedule {
+  /// 1~7: 星期一到星期日
+  weekday       Int
+  lessons       String
+  classroomName String
+  classroom     Classroom @relation(fields: [classroomName], references: [id])
+
+  changed CourseChanged @default(Normal)
+
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id])
+
+  @@id([courseId, weekday])
+}
+
+model Department {
+  // 系所代碼，來自舊系統 `dpt_code`
+  id            String  @id @db.VarChar(4)
+  /// 人事單位代碼，來自舊系統 NOL table `dep_unit.adcd`
+  hrSerial      String  @db.VarChar(7)
+  nameZhTw      String  @db.VarChar(40)
+  nameEn        String? @db.VarChar(100)
+  shortNameZhTw String? @db.VarChar(12)
+  shortNameEn   String? // TODO: 舊系統沒有，是否要新增?
+
+  grades  Grade[]
+  courses Course[]
+}
+
+/// 計中認證後取得5碼人員編號轉換教務處使用之6碼教師代碼用，來自舊系統 NOL table `tea_emp`, 
+model Teacher {
+  /// 教師代碼，來自舊系統 `tea_code2`
+  id         String  @id @db.VarChar(6)
+  /// 人員編號
+  teacherSeq String  @db.VarChar(5)
+  nameZhTw   String  @db.VarChar(10)
+  // only exist in table `english`?
+  // 從計中取得教師資料時可能會沒有?
+  nameEn     String? @db.VarChar(30)
+
+  Course Course[]
+}
+
+// 來自舊系統 NOL table `ifcrfsl`
+model Limit {
+  id              String @id
+  descriptionZhTw String
+  descriptionEn   String
+
+  courses Course[]
+}
+
+/// 修課學生限制，來自舊系統 NOL table `ifcrfpre`
+model CourseStudentLimit {
+  /// 課程識別碼
+  courseId           String             @db.VarChar(9)
+  identificationType IdentificationType
+  studnetLimitType   StudentLimitType
+
+  @@unique([courseId, identificationType, studnetLimitType])
+}
+
+/// 先擋修科目
+model CoursePrecourseLimit {
+  /// 課程識別碼
+  courseId             String  @db.VarChar(9)
+  /// 序號
+  order                Int
+  // TODO: 待確認原始資料內容，複數課名?
+  /// 先修科目
+  precourse            String  @db.VarChar(20)
+  /// 及格分數
+  score                Int
+  /// 當學期是否並修
+  semesterCourseSelect Boolean
+
+  @@unique([courseId, order])
+}
+
+// 來自舊系統 NOL table `ifcrfcn`、`ifcrfyl`
+model Grade {
+  id       String @id @db.VarChar(1)
+  nameZhTw String @db.VarChar(32)
+  nameEn   String @db.VarChar(72)
+  /// 下拉選單順序，來自舊系統 `Cl_seq`
+  order    Int
+
+  courses     Course[]
+  departments Department[]
+}
+
+/// 來自舊系統 NOL table `ifcrfcr`
+model Classroom {
+  id            String  @id @db.Uuid
+  /// 教室編號
+  name          String  @db.VarChar(9)
+  location      String  @db.VarChar(22)
+  buildingName  String? @db.VarChar(32)
+  detailZhTw    String? @db.VarChar(32)
+  detailEn      String? @db.VarChar(80)
+  /// 用於產生外部地圖連結
+  buildingId    String  @db.VarChar(8)
+  accessibility Boolean // TODO: bool or enum?
+
+  // TODO: 是否保留以下 column
+  layer String? // values: "build" or ""
+
+  // 1-n
+  Schedule Schedule[]
+}
+
+/// 實習分組，來自舊系統 NOL table `cougrp`
+model PracticeGroup {
+  // TODO: use an id instead?
+  semester      String @db.VarChar(1)
+  /// 課程識別碼
+  courseId      String
+  /// 班次
+  class         String @db.VarChar(2)
+  ///組別
+  group         String @db.VarChar(1)
+  /// 學生人數
+  studentNumber Int
+  /// 教學助理人數
+  taNumber      Int
+  /// 備註說明
+  commentZhTw   String @db.VarChar(30)
+
+  // TODO: 設計課程時間關聯
+  // schedule Schedule[]
+
+  course Course @relation(fields: [semester, courseId], references: [semester, id])
+
+  @@id([semester, courseId])
+}
+
+// ########################################
+//  核心能力相關
+// ########################################
+
+// model CourseCapability {
+//   /// 課程識別碼
+//   courseId String @db.VarChar(9)
+//   // 待確認是否需要
+//   // deparmentId String @db.VarChar(4)
+//   /// 建議修課年級，[1-7]
+//   recommendedGrades Int[]  
+// }
+
+/// 系所核心能力
+model DeparmentCapability {
+  /// 系所代碼
+  deparmentId    String @db.VarChar(4)
+  /// 核心代碼
+  capabilityCode String @db.VarChar(1)
+
+  @@unique([deparmentId, capabilityCode])
+}
+
+/// 核心能力類型
+model CapabilityType {
+  /// 核心代碼， [A-Z]
+  code        String @id @db.VarChar(1)
+  /// 中文名稱
+  nameZhTw    String @db.VarChar(100)
+  /// 英文名曾
+  nameEn      String @db.VarChar(4000)
+  /// 中文說明
+  commentZhTw String @db.VarChar(150)
+  /// 英文說明
+  commentEn   String @db.VarChar(4000)
+}
+
+/// 課程分類
+model CourseCustomType {
+  /// 課程分類代碼， [A-Z]
+  code     String @id @db.VarChar(1)
+  /// 中文名稱
+  nameZhTw String @db.VarChar(50)
+  /// 英文名曾
+  nameEn   String @db.VarChar(50)
+}
+
+// ########################################
+//  領域專長
+// ########################################
+
+/// 領域專長說明主表
+model Domain {
+  /// 領域專長代碼
+  code   String  @id @db.VarChar(10)
+  /// 名稱
+  name   String  @db.VarChar(50)
+  /// 英文名稱
+  nameEn String  @db.VarChar(100)
+  /// 是否通過
+  apply  Boolean
+}
+
+/// 課程領域專長關聯
+model CourseDomain {
+  /// 課程識別碼
+  CourseId   String @db.VarChar(9)
+  /// 領域專長代碼
+  DomainCode String @db.VarChar(10)
+
+  @@unique([CourseId, DomainCode])
+}
+
+// ########################################
+//  enum
+// ########################################
+
+enum CourseType {
+  Normal
+  Grouped
+  General
+  // TODO: `co_tp` 其實還有其他值，是否要列入?
+}
+
+enum CourseChanged {
+  Normal
+  New
+  Updated
+  Canceled
+}
+
+enum CourseCompulsory {
+  Preassigned
+  Compulsory
+  Elective
+}
+
+enum IdentificationType {
+  CourseId
+  CourseName
+}
+
+enum StudentLimitType {
+  /// 本系學士班
+  DepatmentBachelor
+  /// 本校學士班
+  SchoolBachelor
+  /// 本系學士班 含研究生
+  DepatmentBachelorWithGraduateStudent
+  /// 本校學士班 含研究生
+  SchoolBachelorWithGraduateStudent
+}
+
+enum CourseLength {
+  FullYear
+  HalfYear
+}
