@@ -9,7 +9,7 @@ datasource db {
 
 /// 課程檔
 model Course {
-  id              String           @id @db.Uuid
+  id              String           @id @default(uuid()) @db.Uuid
   /// 流水號, 可能無值
   serial          String?          @db.VarChar(5)
   /// 課號
@@ -20,10 +20,6 @@ model Course {
   semester        String           @db.VarChar(5)
   /// 班次
   class           String           @db.VarChar(3)
-  /// 中文課名
-  nameZh          String           @db.VarChar(48)
-  /// 英文課名
-  nameEn          String           @db.VarChar(100)
   /// 課程類別
   type            CourseType
   /// 通識領域當 `type === General` 時才使用
@@ -34,10 +30,6 @@ model Course {
   length          CourseLength
   /// 學分
   credits         Decimal
-  /// 中文備註
-  commentZhTw     String?
-  /// 英文備註
-  commentEn       String?          @db.VarChar(254)
   /// 通識課程配有TA，非通識課程為null，來自舊系統NOL table com
   isTaAssigned    Boolean?
   /// 英語授課，來自舊系統NOL table english
@@ -63,12 +55,10 @@ model Course {
   /// 課程流水號，舊系統時用於產生課號，來自 `cou_teacno`
   codeSerial             String @db.VarChar(4)
 
-  // 1-1
-  practiceGroup PracticeGroup?
-
   // 1-n
-  schedules Schedule[]
-  limits    Limit[]
+  practiceGroup PracticeGroup[]
+  schedules     Schedule[]
+  limits        Limit[]
 
   // n-1
   gradeId            String
@@ -87,7 +77,23 @@ model Course {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([semester, id])
+  translations CourseTranslations[]
+
+  @@unique([semester, serial])
+}
+
+model CourseTranslations {
+  language Language
+
+  /// 課程名稱
+  name    String
+  /// 課程備註
+  comment String
+
+  courseId String @db.Uuid
+  course   Course @relation(fields: [courseId], references: [id])
+
+  @@id([language, courseId])
 }
 
 model Schedule {
@@ -107,39 +113,70 @@ model Schedule {
 
 model Department {
   // 系所代碼，來自舊系統 `dpt_code`
-  id            String  @id @db.VarChar(4)
+  id       String @id @db.VarChar(4)
   /// 人事單位代碼，來自舊系統 NOL table `dep_unit.adcd`
-  hrSerial      String  @db.VarChar(7)
-  nameZhTw      String  @db.VarChar(40)
-  nameEn        String? @db.VarChar(100)
-  shortNameZhTw String? @db.VarChar(12)
-  shortNameEn   String? // TODO: 舊系統沒有，是否要新增?
+  hrSerial String @db.VarChar(7)
 
   grades  Grade[]
   courses Course[]
+
+  translations DepartmentTranslations[]
+}
+
+model DepartmentTranslations {
+  language Language
+
+  /// 系所名稱
+  name      String
+  /// 系所簡稱
+  shortName String
+
+  departmentId String     @db.VarChar(4)
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  @@id([language, departmentId])
 }
 
 /// 計中認證後取得5碼人員編號轉換教務處使用之6碼教師代碼用，來自舊系統 NOL table `tea_emp`, 
 model Teacher {
   /// 教師代碼，來自舊系統 `tea_code2`
-  id         String  @id @db.VarChar(6)
+  id         String @id @db.VarChar(6)
   /// 人員編號
-  teacherSeq String  @db.VarChar(5)
-  nameZhTw   String  @db.VarChar(10)
-  // only exist in table `english`?
-  // 從計中取得教師資料時可能會沒有?
-  nameEn     String? @db.VarChar(30)
+  teacherSeq String @db.VarChar(5)
 
-  Course Course[]
+  Course       Course[]
+  translations TeacherTranslations[]
+}
+
+model TeacherTranslations {
+  language Language
+
+  /// 教師名稱
+  name String
+
+  teacherId String  @db.VarChar(6)
+  teacher   Teacher @relation(fields: [teacherId], references: [id])
+
+  @@id([language, teacherId])
 }
 
 // 來自舊系統 NOL table `ifcrfsl`
 model Limit {
-  id              String @id
-  descriptionZhTw String
-  descriptionEn   String
+  id           String              @id
+  courses      Course[]
+  translations LimitTranslations[]
+}
 
-  courses Course[]
+model LimitTranslations {
+  language Language
+
+  /// 限制說明
+  description String
+
+  limitId String @db.VarChar(6)
+  limit   Limit  @relation(fields: [limitId], references: [id])
+
+  @@id([language, limitId])
 }
 
 /// 修課學生限制，來自舊系統 NOL table `ifcrfpre`
@@ -171,14 +208,25 @@ model CoursePrecourseLimit {
 
 // 來自舊系統 NOL table `ifcrfcn`、`ifcrfyl`
 model Grade {
-  id       String @id @db.VarChar(1)
-  nameZhTw String @db.VarChar(32)
-  nameEn   String @db.VarChar(72)
+  id    String @id @db.VarChar(1)
   /// 下拉選單順序，來自舊系統 `Cl_seq`
-  order    Int
+  order Int
 
-  courses     Course[]
-  departments Department[]
+  courses      Course[]
+  departments  Department[]
+  translations GradeTranslation[]
+}
+
+model GradeTranslation {
+  language Language
+
+  /// 年級名稱
+  name String
+
+  gradeId String @db.VarChar(1)
+  grade   Grade  @relation(fields: [gradeId], references: [id])
+
+  @@id([language, gradeId])
 }
 
 /// 來自舊系統 NOL table `ifcrfcr`
@@ -188,8 +236,6 @@ model Classroom {
   name          String  @db.VarChar(9)
   location      String  @db.VarChar(22)
   buildingName  String? @db.VarChar(32)
-  detailZhTw    String? @db.VarChar(32)
-  detailEn      String? @db.VarChar(80)
   /// 用於產生外部地圖連結
   buildingId    String  @db.VarChar(8)
   accessibility Boolean // TODO: bool or enum?
@@ -198,37 +244,58 @@ model Classroom {
   layer String? // values: "build" or ""
 
   // 1-n
-  Schedule Schedule[]
+  translations ClassroomTranslations[]
+  Schedule     Schedule[]
+}
+
+model ClassroomTranslations {
+  language Language
+
+  /// 教室詳細資料
+  detail String
+
+  classroomId String    @db.VarChar(1)
+  classroom   Classroom @relation(fields: [classroomId], references: [id])
+
+  @@id([language, classroomId])
 }
 
 /// 實習分組，來自舊系統 NOL table `cougrp`
 model PracticeGroup {
-  // TODO: use an id instead?
-  semester      String @db.VarChar(1)
-  /// 課程識別碼
-  courseId      String
-  /// 班次
-  class         String @db.VarChar(2)
+  id            String @id @db.Uuid
+  // parsed with `semester`+`identifier`
+  courseId      String @db.Uuid
   ///組別
   group         String @db.VarChar(1)
   /// 學生人數
   studentNumber Int
   /// 教學助理人數
   taNumber      Int
-  /// 備註說明
-  commentZhTw   String @db.VarChar(30)
 
   // TODO: 設計課程時間關聯
   // schedule Schedule[]
 
-  course Course @relation(fields: [semester, courseId], references: [semester, id])
+  translations PracticeGroupTranslations[]
 
-  @@id([semester, courseId])
+  course Course @relation(fields: [courseId], references: [id])
+}
+
+model PracticeGroupTranslations {
+  language        Language
+  practiceGroupId String   @db.Uuid
+
+  comment String
+
+  practiceGroup PracticeGroup @relation(fields: [practiceGroupId], references: [id])
+
+  @@id([language, practiceGroupId])
 }
 
 // ########################################
 //  核心能力相關
 // ########################################
+
+// TODO: fix relations, translation model
 
 // model CourseCapability {
 //   /// 課程識別碼
@@ -342,4 +409,9 @@ enum StudentLimitType {
 enum CourseLength {
   FullYear
   HalfYear
+}
+
+enum Language {
+  zh_TW @map("zh-TW")
+  en_US @map("zh-US")
 }
