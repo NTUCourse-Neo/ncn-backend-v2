@@ -100,12 +100,12 @@ model Schedule {
   /// 1~7: 星期一到星期日
   weekday       Int
   lessons       String
-  classroomName String
+  classroomName String @db.Uuid
   classroom     Classroom @relation(fields: [classroomName], references: [id])
 
   changed CourseChanged @default(Normal)
 
-  courseId String
+  courseId String @db.Uuid
   course   Course @relation(fields: [courseId], references: [id])
 
   @@id([courseId, weekday])
@@ -254,7 +254,7 @@ model ClassroomTranslations {
   /// 教室詳細資料
   detail String
 
-  classroomId String    @db.VarChar(1)
+  classroomId String    @db.Uuid
   classroom   Classroom @relation(fields: [classroomId], references: [id])
 
   @@id([language, classroomId])
