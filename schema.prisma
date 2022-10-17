@@ -73,18 +73,20 @@ model Course {
   teacher            Teacher    @relation(fields: [teacherId], references: [id])
 
   // m-n
-  prerequisiteOf Course[] @relation("coursePrerequisite")
-  prerequisites  Course[] @relation("coursePrerequisite")
+  // TODO: duplicated usage with table `CoursePrecourseLimit`
+  prerequisiteOf Course[] @relation("CoursePrerequisite")
+  prerequisites  Course[] @relation("CoursePrerequisite")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  translations CourseTranslations[]
+  translations          CourseTranslation[]
+  specializationProgram CoursespecializationProgram[]
 
   @@unique([semester, serial])
 }
 
-model CourseTranslations {
+model CourseTranslation {
   language Language
 
   /// 課程名稱
@@ -100,10 +102,10 @@ model CourseTranslations {
 
 model Schedule {
   /// 1~7: 星期一到星期日
-  weekday       Int
-  lessons       String
-  classroomId String @db.Uuid
-  classroom     Classroom @relation(fields: [classroomId], references: [id])
+  weekday     Int
+  lessons     String
+  classroomId String    @db.Uuid
+  classroom   Classroom @relation(fields: [classroomId], references: [id])
 
   changed CourseChanged @default(Normal)
 
@@ -122,10 +124,10 @@ model Department {
   grades  Grade[]
   courses Course[]
 
-  translations DepartmentTranslations[]
+  translations DepartmentTranslation[]
 }
 
-model DepartmentTranslations {
+model DepartmentTranslation {
   language Language
 
   /// 系所名稱
@@ -144,13 +146,13 @@ model Teacher {
   /// 教師代碼，來自舊系統 `tea_code2`
   id         String @id @db.VarChar(6)
   /// 人員編號
-  teacherSeq String @db.VarChar(5)
+  employeeId String @db.VarChar(5)
 
   Course       Course[]
-  translations TeacherTranslations[]
+  translations TeacherTranslation[]
 }
 
-model TeacherTranslations {
+model TeacherTranslation {
   language Language
 
   /// 教師名稱
@@ -164,12 +166,12 @@ model TeacherTranslations {
 
 // 來自舊系統 NOL table `ifcrfsl`
 model Limit {
-  id           String              @id
+  id           String             @id
   courses      Course[]
-  translations LimitTranslations[]
+  translations LimitTranslation[]
 }
 
-model LimitTranslations {
+model LimitTranslation {
   language Language
 
   /// 限制說明
@@ -191,6 +193,7 @@ model CourseStudentLimit {
   @@unique([courseId, identificationType, studnetLimitType])
 }
 
+// TODO: duplicated usage with table `Course.prerequisites`
 /// 先擋修科目
 model CoursePrecourseLimit {
   /// 課程識別碼
@@ -201,7 +204,7 @@ model CoursePrecourseLimit {
   /// 先修科目
   precourse            String  @db.VarChar(20)
   /// 及格分數
-  score                Int
+  requiredScore        Int
   /// 當學期是否並修
   semesterCourseSelect Boolean
 
@@ -246,11 +249,11 @@ model Classroom {
   layer String? // values: "build" or ""
 
   // 1-n
-  translations ClassroomTranslations[]
+  translations ClassroomTranslation[]
   Schedule     Schedule[]
 }
 
-model ClassroomTranslations {
+model ClassroomTranslation {
   language Language
 
   /// 教室詳細資料
@@ -277,12 +280,12 @@ model PracticeGroup {
   // TODO: 設計課程時間關聯
   // schedule Schedule[]
 
-  translations PracticeGroupTranslations[]
+  translations PracticeGroupTranslation[]
 
   course Course @relation(fields: [courseId], references: [id])
 }
 
-model PracticeGroupTranslations {
+model PracticeGroupTranslation {
   language        Language
   practiceGroupId String   @db.Uuid
 
@@ -321,25 +324,40 @@ model DeparmentCapability {
 /// 核心能力類型
 model CapabilityType {
   /// 核心代碼， [A-Z]
-  code        String @id @db.VarChar(1)
-  /// 中文名稱
-  nameZhTw    String @db.VarChar(100)
-  /// 英文名曾
-  nameEn      String @db.VarChar(4000)
-  /// 中文說明
-  commentZhTw String @db.VarChar(150)
-  /// 英文說明
-  commentEn   String @db.VarChar(4000)
+  code String @id @db.VarChar(1)
+
+  translations CapabilityTypeTranslation[]
+}
+
+model CapabilityTypeTranslation {
+  language Language
+
+  name    String
+  comment String
+
+  typeCode String         @db.VarChar(1)
+  type     CapabilityType @relation(fields: [typeCode], references: [code])
+
+  @@id([language, typeCode])
 }
 
 /// 課程分類
 model CourseCustomType {
   /// 課程分類代碼， [A-Z]
-  code     String @id @db.VarChar(1)
-  /// 中文名稱
-  nameZhTw String @db.VarChar(50)
-  /// 英文名曾
-  nameEn   String @db.VarChar(50)
+  code String @id @db.VarChar(1)
+
+  translations CourseCustomTypeTranslation[]
+}
+
+model CourseCustomTypeTranslation {
+  language Language
+
+  name String
+
+  typeCode String           @db.VarChar(1)
+  type     CourseCustomType @relation(fields: [typeCode], references: [code])
+
+  @@id([language, typeCode])
 }
 
 // ########################################
@@ -347,34 +365,46 @@ model CourseCustomType {
 // ########################################
 
 /// 領域專長說明主表
-model Domain {
+model SpecializationProgram {
   /// 領域專長代碼
-  code   String  @id @db.VarChar(10)
-  /// 名稱
-  name   String  @db.VarChar(50)
-  /// 英文名稱
-  nameEn String  @db.VarChar(100)
+  code  String  @id @db.VarChar(10)
   /// 是否通過
-  apply  Boolean
+  apply Boolean
+
+  translations SpecializationProgramTranslation[]
+  courses      CoursespecializationProgram[]
+}
+
+model SpecializationProgramTranslation {
+  language Language
+
+  name String
+
+  specializationProgramCode String                @db.VarChar(1)
+  specializationProgram     SpecializationProgram @relation(fields: [specializationProgramCode], references: [code])
+
+  @@id([language, specializationProgramCode])
 }
 
 /// 課程領域專長關聯
-model CourseDomain {
+model CoursespecializationProgram {
   /// 課程識別碼
-  CourseId   String @db.VarChar(9)
-  /// 領域專長代碼
-  DomainCode String @db.VarChar(10)
+  courseId String @db.Uuid
+  course   Course @relation(fields: [courseId], references: [id])
 
-  @@unique([CourseId, DomainCode])
+  /// 領域專長代碼
+  specializationProgramCode String                @db.VarChar(10)
+  specializationProgram     SpecializationProgram @relation(fields: [specializationProgramCode], references: [code])
+
+  @@unique([courseId, specializationProgramCode])
 }
 
 // ########################################
 // 課程大綱 from ceiba db
 // ########################################
 
-// 有許多重複的欄位，待確認此用方法
-// 有許多重複的欄位，待確認此用方法
-// 有許多重複的欄位，待確認此用方法
+// TODO: 有許多重複的欄位，待確認使用方法
+// TODO: missing relations
 
 /// 課程大綱主表
 model Syllabus {
@@ -420,11 +450,11 @@ model Syllabus {
   officeTimeSwitch SyllabusOfficeTimeSwitch?
 
   // 1-n
-  files    SyllabusFile[]
-  books    SyllabusBook[]
-  goals    SyllabusGoal[]
-  requests SyllabusRequest[]
-  officeTimes SyllabusOfficeTime []
+  files       SyllabusFile[]
+  books       SyllabusBook[]
+  goals       SyllabusGoal[]
+  requests    SyllabusRequest[]
+  officeTimes SyllabusOfficeTime[]
 }
 
 /// 課程大綱附加資料
@@ -450,7 +480,7 @@ model SyllabusBook {
   /// 大綱id
   syllabusId Int
   /// 書名
-  book       String
+  name       String
   /// 語系
   lang       Language
 
@@ -466,7 +496,7 @@ model SyllabusGoal {
   /// 課程描述
   describe       String
   /// 課程要求
-  background     String
+  requirement    String
   /// 課程目標
   goal           String
   /// 關鍵字
@@ -480,9 +510,7 @@ model SyllabusGoal {
 }
 
 /// 課程目標建立相關資料
-// 待確認我們是否會用到
-// 待確認我們是否會用到
-// 待確認我們是否會用到
+// TODO: 待確認我們是否會用到
 // model SyllabusGoalInfo {
 //   /// 流水號
 //   sn       Int    @id
@@ -548,15 +576,15 @@ model SyllabusOfficeTime {
 }
 
 /// office time switch
-// 待確認作用
+// TODO: 待確認作用
 model SyllabusOfficeTimeSwitch {
   /// 流水號
-  id       Int    @id
+  id         Int     @id
   /// 大綱id 
-  syllabusId Int @unique
+  syllabusId Int     @unique
   /// 固定時間 或另約時間
-  fixedTime Boolean
-  comment   String
+  fixedTime  Boolean
+  comment    String
 
   syllabus Syllabus @relation(fields: [syllabusId], references: [id])
 }
@@ -565,7 +593,7 @@ model SyllabusOfficeTimeSwitch {
 // 查詢教師聯絡資料時使用
 // 從 tea_emp取得人員編號再來此檔取得帳號
 // 省略其他未使用欄位
-model SyllabusTeacerAccount {
+model SyllabusTeacherAccount {
   /// 教師帳號
   accout String @db.VarChar(16)
   /// 人員編號
@@ -577,25 +605,27 @@ model SyllabusTeacerAccount {
 /// 教師資訊
 model SyllabusTeacherInfo {
   /// 帳號 
-  // todo : 待確認是否可以直接用seq欄位
+  // TODO: 待確認是否可以直接用seq欄位
   userId    String @id @db.VarChar(50)
   /// 分類，T:教職員
-  // 待確認是否有不是教師的類別
+  // TODO: 待確認是否有不是教師的類別
   role      String @db.VarChar(1)
   /// 中文名
-  // todo: 是否需要紀錄英文名
-  nameZhTw  String @db.VarChar(50)
+  // TODO: 是否需要紀錄英文名
+  name      String @db.VarChar(50)
   /// 個人首頁
   url       String @db.VarChar(255)
   email     String @db.VarChar(255)
-  phone     String @db.VarChar(50)
-  cellPhone String @db.VarChar(50)
+  landline  String @db.VarChar(50)
+  telephone String @db.VarChar(50)
   /// 辦公室  
   address   String @db.VarChar(255)
   /// 個人簡介
   info      String
+
+  // future-work
   /// 檔名
-  imgfile   String @db.VarChar(64)
+  // imgfile   String @db.VarChar(64)
 }
 
 // ########################################
@@ -633,9 +663,9 @@ enum StudentLimitType {
   /// 本校學士班
   SchoolBachelor
   /// 本系學士班 含研究生
-  DepatmentBachelorWithGraduateStudent
+  DepatmentBachelorAndGraduateStudent
   /// 本校學士班 含研究生
-  SchoolBachelorWithGraduateStudent
+  SchoolBachelorAndGraduateStudent
 }
 
 enum CourseLength {
@@ -645,7 +675,7 @@ enum CourseLength {
 
 enum Language {
   zh_TW @map("zh-TW")
-  en_US @map("zh-US")
+  en_US @map("en-US")
 }
 
 enum SyllabusClassification {
@@ -673,7 +703,7 @@ enum GeneralMark {
   A8
   B
   /// 可充抵
-  C 
+  C
 }
 
 enum Lesson {
