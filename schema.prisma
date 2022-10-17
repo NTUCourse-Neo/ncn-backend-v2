@@ -403,7 +403,7 @@ model CoursespecializationProgram {
 // 課程大綱 from ceiba db
 // ########################################
 
-// TODO: 有許多重複的欄位，待確認使用方法
+// TODO: 底下的表是直接從 ceiba 搬過來的，需要重新設計並合併到上面新設計的 schema
 // TODO: missing relations
 
 /// 課程大綱主表
