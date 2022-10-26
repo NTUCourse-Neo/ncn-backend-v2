@@ -87,6 +87,7 @@ model Course {
   // m-n
   specializationPrograms CourseSpecializationProgram[]
   CoursePrecourseLimits  CoursePrecourseLimit[]
+  CourseCollectionItem   CourseCollectionItem[]
 }
 
 model CourseTranslation {
@@ -392,6 +393,7 @@ model Semester {
   Course                   Course[]
   Progress                 Progress[]
   PreseletectedCourseTable PreseletectedCourseTable[]
+  CourseCollection         CourseCollection[]
 
   @@unique([year, semester])
 }
@@ -590,6 +592,7 @@ model SyllabusOfficeTime {
   // 結束時間
   end        String   @db.VarChar(5)
   createdAt  DateTime @default(now())
+
   @@unique([syllabusId, week, start])
 }
 
@@ -666,23 +669,24 @@ model User {
   Department               Department?                @relation(fields: [departmentId], references: [id])
   /// 年級
   grade                    Int?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
   courseCollection         CourseCollection[]
   userInfoTranslation      UserInfoTranslation[]
   PreseletectedCourseTable PreseletectedCourseTable[]
 }
 
 model UserInfoTranslation {
-  language Language
-  userId   String   @db.Uuid
-  user     User     @relation(fields: [userId], references: [id])
-  name     String
+  language  Language
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
   /// 組別， 只有學生才有
   // ex: 國際關係組
-  group    String?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  group     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@id([language, userId])
 }
 
@@ -690,24 +694,36 @@ model UserInfoTranslation {
 // 課表相關
 // ########################################
 
-/// 課程收藏
+/// 課程收藏 主體
 model CourseCollection {
-  userId   String @db.Uuid
-  user     User   @relation(fields: [userId], references: [id])
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id])
+  /// 學期Id
+  semesterId String   @db.Uuid
+  semester   Semester @relation(fields: [semesterId], references: [id])
   /// 課程uuid
-  courseId String @db.Uuid
-  course   Course @relation(fields: [courseId], references: [id])
+  courseId   String   @db.Uuid
+  course     Course   @relation(fields: [courseId], references: [id])
 
   createdAt DateTime @default(now())
+}
 
-  @@id([userId, courseId])
+/// 課程收藏項目
+model CourseCollectionItem {
+  courseCollectionId String   @db.Uuid
+  courseId           String   @db.Uuid
+  course             Course   @relation(fields: [courseId], references: [id])
+  createdAt          DateTime @default(now())
+
+  @@id([courseCollectionId, courseId])
 }
 
 /// 預選課表主體
 model PreseletectedCourseTable {
   id                           String                         @id @default(uuid()) @db.Uuid
   /// 學期Id
-  semesterId                   String                         @db.VarChar(20)
+  semesterId                   String                         @db.Uuid
   semester                     Semester                       @relation(fields: [semesterId], references: [id])
   studentId                    String                         @db.Uuid
   user                         User                           @relation(fields: [studentId], references: [id])
