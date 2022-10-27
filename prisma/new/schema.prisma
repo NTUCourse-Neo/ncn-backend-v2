@@ -34,7 +34,10 @@ model Course {
   isEnglishTaught              Boolean
   /// 可充當外文領域
   // 舊系統需join另一張table asforcou
-  asForeign                    Boolean?
+  asForeign                    Boolean
+  /// 為共同選修課
+  // 舊系統需join另一張table commopt
+  isCommon                     Boolean
   /// 密集課程的週次
   intensiveWeeks               Int[]          @default([])
   /// 課程大綱網址
@@ -70,8 +73,8 @@ model Course {
   // 可以設定成不同的建議授課年級、選必修、通識, etc.
   targets                       CourseTarget[]
   translations                  CourseTranslation[]
-  courseCollection              CourseCollection[]
   preseletectedCourseTableItems PreseletectedCourseTableItem[]
+  CourseCollectionItem          CourseCollectionItem[]
 
   // n-1
   /// 教師代碼
@@ -87,7 +90,6 @@ model Course {
   // m-n
   specializationPrograms CourseSpecializationProgram[]
   CoursePrecourseLimits  CoursePrecourseLimit[]
-  CourseCollectionItem   CourseCollectionItem[]
 }
 
 model CourseTranslation {
@@ -702,19 +704,18 @@ model CourseCollection {
   /// 學期Id
   semesterId String   @db.Uuid
   semester   Semester @relation(fields: [semesterId], references: [id])
-  /// 課程uuid
-  courseId   String   @db.Uuid
-  course     Course   @relation(fields: [courseId], references: [id])
 
-  createdAt DateTime @default(now())
+  createdAt            DateTime               @default(now())
+  CourseCollectionItem CourseCollectionItem[]
 }
 
 /// 課程收藏項目
 model CourseCollectionItem {
-  courseCollectionId String   @db.Uuid
-  courseId           String   @db.Uuid
-  course             Course   @relation(fields: [courseId], references: [id])
-  createdAt          DateTime @default(now())
+  courseCollectionId String           @db.Uuid
+  courseCollection   CourseCollection @relation(fields: [courseCollectionId], references: [id])
+  courseId           String           @db.Uuid
+  course             Course           @relation(fields: [courseId], references: [id])
+  createdAt          DateTime         @default(now())
 
   @@id([courseCollectionId, courseId])
 }
