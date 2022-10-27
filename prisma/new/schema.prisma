@@ -330,6 +330,10 @@ model Classroom {
   // 但db內只有存1 資料
   // TODO：是否當作有電梯就為true，不管無障礙設施?
   accessibility Boolean
+  // for 台大課程地圖參數使用
+  // 值只有build || empty string
+  // 可能是在課程地圖有紀錄的大樓?
+  layer         String?
 
   // 1-n
   translations ClassroomTranslation[]
