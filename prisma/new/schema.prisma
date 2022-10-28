@@ -242,7 +242,7 @@ model PrecourseLimit {
   /// 課程識別碼
   courseCode         String             @db.VarChar(9)
   identificationType IdentificationType
-  studnetLimitType   StudentLimitType
+  studentLimitType   StudentLimitType
 
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
