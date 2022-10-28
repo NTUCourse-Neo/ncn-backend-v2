@@ -318,7 +318,9 @@ router.put("/favorites/:course_id", checkJwt, async (req, res, next) => {
       res.status(400).send({ message: "Course is already in favorites." });
       return;
     }
-    const course = await prisma.courses.findUnique({ where: { id: course_id } });
+    const course = await prisma.courses.findUnique({
+      where: { id: course_id },
+    });
     if (!course) {
       res.status(400).send({ message: "Course not found." });
       return;
