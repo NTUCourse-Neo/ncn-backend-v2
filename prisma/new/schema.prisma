@@ -46,26 +46,26 @@ model Course {
   externalSyllabusUrl          String?        @db.VarChar(200)
   /// 修課總人數
   // 原tno
-  studentNumber                Int
+  totalStudentQuota            Int
   /// 外系人數 Int
   // 原eno
-  otherDeparmentsStudentNumber Int
+  otherDepartmentsStudentQuota Int
   /// 外校人數 Int
   // 原ono
-  outsideStudentNumber         Int
+  nonNtuStudentQuota           Int
   /// 可加選人數 Int
   // 原sno
-  ableAddRollNumber            Int
+  enrollableStudentQuota       Int
   /// 異動項目
   // chgitem
   changeItems                  CourseChange[]
 
   // 1-1
-  Syllabus Syllabus?
+  syllabus Syllabus?
 
   // 1-n
   schedules                     Schedule[]
-  practiceGroup                 PracticeGroup[]
+  practiceGroups                PracticeGroup[]
   /// 修課限制
   limits                        Limit[]
   /// 授課對象相關設定
@@ -74,7 +74,7 @@ model Course {
   targets                       CourseTarget[]
   translations                  CourseTranslation[]
   preseletectedCourseTableItems PreseletectedCourseTableItem[]
-  CourseCollectionItem          CourseCollectionItem[]
+  courseCollectionItems         CourseCollectionItem[]
 
   // n-1
   /// 教師代碼
@@ -82,14 +82,14 @@ model Course {
   teacher    Teacher  @relation(fields: [teacherId], references: [id])
   /// 學期
   semesterId String   @db.Uuid
-  Semester   Semester @relation(fields: [semesterId], references: [id])
+  semester   Semester @relation(fields: [semesterId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // m-n
   specializationPrograms CourseSpecializationProgram[]
-  CoursePrecourseLimits  CoursePrecourseLimit[]
+  coursePrecourseLimits  CoursePrecourseLimit[]
 }
 
 model CourseTranslation {
@@ -136,7 +136,7 @@ model Department {
   users            User[]
   translations     DepartmentTranslation[]
   courseTargets    CourseTarget[]
-  GradeDepartments GradeDepartment[]
+  gradeDepartments GradeDepartment[]
 }
 
 model DepartmentTranslation {
@@ -155,9 +155,9 @@ model DepartmentTranslation {
 /// 課程 授課對象
 model CourseTarget {
   courseId     String     @db.Uuid
-  couse        Course     @relation(fields: [courseId], references: [id])
+  course       Course     @relation(fields: [courseId], references: [id])
   departmentId String     @db.VarChar(7)
-  deparrment   Department @relation(fields: [departmentId], references: [id])
+  department   Department @relation(fields: [departmentId], references: [id])
 
   // 每個課程根據授課對象不同，可再對以下欄位進行個別調整
 
@@ -190,7 +190,7 @@ model Teacher {
   /// 人員編號
   employeeId String @db.VarChar(5)
 
-  Course       Course[]
+  courses      Course[]
   translations TeacherTranslation[]
 
   createdAt DateTime @default(now())
@@ -244,10 +244,10 @@ model PrecourseLimit {
   identificationType IdentificationType
   studentLimitType   StudentLimitType
 
-  createdAt            DateTime               @default(now())
-  updatedAt            DateTime               @updatedAt
-  PrecourseLimitCourse PrecourseLimitCourse[]
-  CoursePrecourseLimit CoursePrecourseLimit[]
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  precourseLimitCourses PrecourseLimitCourse[]
+  coursePrecourseLimits CoursePrecourseLimit[]
 }
 
 /// 先擋修科目，來自舊系統 NTU table `ifcrfprer`
@@ -261,7 +261,7 @@ model PrecourseLimitCourse {
   /// 及格分數
   requiredScore        Int
   /// 當學期是否並修
-  semesterCourseSelect Boolean
+  isCorequisite Boolean
   createdAt            DateTime       @default(now())
 
   @@unique([precourseLimitId, order])
@@ -337,7 +337,7 @@ model Classroom {
 
   // 1-n
   translations ClassroomTranslation[]
-  Schedule     Schedule[]
+  schedules     Schedule[]
 
   // ex:
   // name / location/ buildingName
@@ -370,9 +370,9 @@ model PracticeGroup {
   // ex: A、B、C
   group         String   @db.VarChar(1)
   /// 學生人數
-  studentNumber Int
+  studentQuota Int
   /// 教學助理人數
-  taNumber      Int
+  taQuota      Int
   /// 上課時間地點
   /// 1~7: 星期一到星期日
   weekday       Int
@@ -396,10 +396,10 @@ model Semester {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  Course                   Course[]
-  Progress                 Progress[]
-  PreseletectedCourseTable PreseletectedCourseTable[]
-  CourseCollection         CourseCollection[]
+  course                   Course[]
+  progresses                 Progress[]
+  preseletectedCourseTables PreseletectedCourseTable[]
+  courseCollections         CourseCollection[]
 
   @@unique([year, semester])
 }
@@ -433,8 +433,8 @@ model ProgressType {
   sort                    Int
   createdAt               DateTime                  @default(now())
   updatedAt               DateTime                  @updatedAt
-  Progress                Progress[]
-  ProgressTypeTranslation ProgressTypeTranslation[]
+  progresses                Progress[]
+  progressTypeTranslations ProgressTypeTranslation[]
 }
 
 model ProgressTypeTranslation {
@@ -452,16 +452,7 @@ model ProgressTypeTranslation {
 //  核心能力相關
 // ########################################
 
-// TODO: fix relations, translation model
-
-// model CourseCapability {
-//   /// 課程識別碼
-//   courseId String @db.VarChar(9)
-//   // 待確認是否需要
-//   // deparmentId String @db.VarChar(4)
-//   /// 建議修課年級，[1-7]
-//   recommendedGrades Int[]  
-// }
+// TODO: 尚無訪問course map的權限，根據舊課程網畫面，可能不需要存以下資料
 
 /// 系所核心能力
 model DeparmentCapability {
@@ -571,18 +562,18 @@ model Syllabus {
   // 與model SyllabusOfficeTime不同
   // 原本於ceiba就有兩種形式
   // table office_time_sw.sw
-  // 原為0 時，另約時 。 為1 時，固定時
+  // 為0時，表示為須預約。 為1時，固定時
   needReserved  Boolean?
   // table office_time_sw.coment
-  // 舊課程網畫面上稱office houre
+  // 舊課程網畫面上稱office hour
   officeComment String?
 
   createdAt                   DateTime                      @default(now())
   updatedAt                   DateTime                      @updatedAt
-  SyllabusTranslation         SyllabusTranslation[]
-  SyllabusRateTranslation     SyllabusRateTranslation[]
-  SyllabusProgressTranslation SyllabusProgressTranslation[]
-  SyllabusOfficeTime          SyllabusOfficeTime[]
+  syllabusTranslations         SyllabusTranslation[]
+  syllabusRateTranslations     SyllabusRateTranslation[]
+  syllabusProgressTranslations SyllabusProgressTranslation[]
+  syllabusOfficeTimes          SyllabusOfficeTime[]
 }
 
 /// 可以找到老師或助教的時間
@@ -594,12 +585,12 @@ model SyllabusOfficeTime {
   week       Int
   /// 開始時間
   // ex: 09:15
-  start      String   @db.VarChar(5)
+  startAt      String   @db.VarChar(5)
   // 結束時間
-  end        String   @db.VarChar(5)
+  endAt        String   @db.VarChar(5)
   createdAt  DateTime @default(now())
 
-  @@unique([syllabusId, week, start])
+  @@unique([syllabusId, week, startAt, endAt])
 }
 
 model SyllabusTranslation {
@@ -672,14 +663,14 @@ model User {
   sequence                 String
   userType                 UserType
   departmentId             String?                    @db.VarChar(4)
-  Department               Department?                @relation(fields: [departmentId], references: [id])
+  department               Department?                @relation(fields: [departmentId], references: [id])
   /// 年級
   grade                    Int?
   createdAt                DateTime                   @default(now())
   updatedAt                DateTime                   @updatedAt
-  courseCollection         CourseCollection[]
-  userInfoTranslation      UserInfoTranslation[]
-  PreseletectedCourseTable PreseletectedCourseTable[]
+  courseCollections         CourseCollection[]
+  userInfoTranslations      UserInfoTranslation[]
+  preseletectedCourseTables PreseletectedCourseTable[]
 }
 
 model UserInfoTranslation {
@@ -710,7 +701,7 @@ model CourseCollection {
   semester   Semester @relation(fields: [semesterId], references: [id])
 
   createdAt            DateTime               @default(now())
-  CourseCollectionItem CourseCollectionItem[]
+  courseCollectionItems CourseCollectionItem[]
 }
 
 /// 課程收藏項目
@@ -733,7 +724,7 @@ model PreseletectedCourseTable {
   studentId                    String                         @db.Uuid
   user                         User                           @relation(fields: [studentId], references: [id])
   createdAt                    DateTime                       @default(now())
-  PreseletectedCourseTableItem PreseletectedCourseTableItem[]
+  preseletectedCourseTableItems PreseletectedCourseTableItem[]
 }
 
 /// 預選課表項目
@@ -767,7 +758,7 @@ enum CourseType {
   /// 夜間部
   NightSchool
   /// 體育
-  physicalEducation
+  PhysicalEducation
   /// 軍訓
   MilitaryTrainingClass
 }
