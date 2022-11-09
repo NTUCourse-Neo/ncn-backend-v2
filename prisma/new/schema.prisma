@@ -30,6 +30,8 @@ model Course {
   /// 狀態
   // 原co_chg  
   status                       CourseStatus   @default(Normal)
+  /// 加簽方式
+  enrollMethod                 Int
   /// 英語授課，來自舊系統NOL table english
   isEnglishTaught              Boolean
   /// 可充當外文領域
