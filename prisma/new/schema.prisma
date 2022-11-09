@@ -88,8 +88,8 @@ model Course {
   updatedAt DateTime? @updatedAt
 
   // m-n
-  specializationPrograms CourseSpecializationProgram[]
-  coursePrecourseLimits  CoursePrecourseLimit[]
+  specializedPrograms   CourseSpecializedProgram[]
+  coursePrecourseLimits CoursePrecourseLimit[]
 }
 
 model CourseTranslation {
@@ -112,7 +112,7 @@ model Schedule {
   /// 1~7: 星期一到星期日
   weekday     Int
   // ex: ['7','8','A']
-  lessons     String[]
+  intervals   String[]
   classroomId String    @db.Uuid
   classroom   Classroom @relation(fields: [classroomId], references: [id])
 
@@ -508,44 +508,44 @@ model CourseCustomTypeTranslation {
 // ########################################
 
 /// 領域專長說明主表
-model SpecializationProgram {
+model SpecializedProgram {
   /// 領域專長代碼
   code       String  @id @db.VarChar(10)
   /// 是否通過
   isAdmitted Boolean
 
-  translations SpecializationProgramTranslation[]
-  courses      CourseSpecializationProgram[]
+  translations SpecializedProgramTranslation[]
+  courses      CourseSpecializedProgram[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
 }
 
-model SpecializationProgramTranslation {
+model SpecializedProgramTranslation {
   language Language
 
   name String
 
-  specializationProgramCode String                @db.VarChar(1)
-  specializationProgram     SpecializationProgram @relation(fields: [specializationProgramCode], references: [code])
+  specializedProgramCode String             @db.VarChar(1)
+  specializedProgram     SpecializedProgram @relation(fields: [specializedProgramCode], references: [code])
 
   createdAt DateTime @default(now())
 
-  @@id([language, specializationProgramCode])
+  @@id([language, specializedProgramCode])
 }
 
 /// 課程領域專長關聯
-model CourseSpecializationProgram {
+model CourseSpecializedProgram {
   /// 課程識別碼
   courseId String @db.Uuid
   course   Course @relation(fields: [courseId], references: [id])
 
   /// 領域專長代碼
-  specializationProgramCode String                @db.VarChar(10)
-  specializationProgram     SpecializationProgram @relation(fields: [specializationProgramCode], references: [code])
-  createdAt                 DateTime              @default(now())
+  specializedProgramCode String             @db.VarChar(10)
+  specializedProgram     SpecializedProgram @relation(fields: [specializedProgramCode], references: [code])
+  createdAt              DateTime           @default(now())
 
-  @@unique([courseId, specializationProgramCode])
+  @@unique([courseId, specializedProgramCode])
 }
 
 // ########################################
