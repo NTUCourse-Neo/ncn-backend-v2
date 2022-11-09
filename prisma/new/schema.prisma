@@ -67,7 +67,7 @@ model Course {
   schedules                     Schedule[]
   practiceGroups                PracticeGroup[]
   /// 修課限制
-  limits                        Limit[]
+  limits                        CourseLimit[]
   /// 授課對象相關設定
   // 一門課根據系所進行不同設定 
   // 可以設定成不同的建議授課年級、選必修、通識, etc.
@@ -84,8 +84,8 @@ model Course {
   semesterId String   @db.Uuid
   semester   Semester @relation(fields: [semesterId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
 
   // m-n
   specializationPrograms CourseSpecializationProgram[]
@@ -193,8 +193,8 @@ model Teacher {
   courses      Course[]
   translations TeacherTranslation[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 model TeacherTranslation {
@@ -214,22 +214,22 @@ model TeacherTranslation {
 /// 修課限制
 // ex: 限學士班二年級以上
 // 來自舊系統 NOL table `ifcrfsl`
-model Limit {
-  id           String             @id @db.VarChar(3)
+model CourseLimit {
+  id           String                   @id @db.VarChar(3)
   courses      Course[]
-  translations LimitTranslation[]
+  translations CourseLimitTranslation[]
 
   createdAt DateTime @default(now())
 }
 
-model LimitTranslation {
+model CourseLimitTranslation {
   language Language
 
   /// 限制說明
   description String
 
-  limitId String @db.VarChar(3)
-  limit   Limit  @relation(fields: [limitId], references: [id])
+  limitId String      @db.VarChar(3)
+  limit   CourseLimit @relation(fields: [limitId], references: [id])
 
   createdAt DateTime @default(now())
 
@@ -245,24 +245,24 @@ model PrecourseLimit {
   studentLimitType   StudentLimitType
 
   createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
+  updatedAt             DateTime?              @updatedAt
   precourseLimitCourses PrecourseLimitCourse[]
   coursePrecourseLimits CoursePrecourseLimit[]
 }
 
 /// 先擋修科目，來自舊系統 NTU table `ifcrfprer`
 model PrecourseLimitCourse {
-  precourseLimitId     String         @db.Uuid
-  precouseLimit        PrecourseLimit @relation(fields: [precourseLimitId], references: [id])
+  precourseLimitId String         @db.Uuid
+  precouseLimit    PrecourseLimit @relation(fields: [precourseLimitId], references: [id])
   /// 序號
-  order                Int
+  order            Int
   /// 先修科目 (課程識別碼 或 課程名稱)
-  precourse            String         @db.VarChar(20)
+  precourse        String         @db.VarChar(20)
   /// 及格分數
-  requiredScore        Int
+  requiredScore    Int
   /// 當學期是否並修
-  isCorequisite Boolean
-  createdAt            DateTime       @default(now())
+  isCorequisite    Boolean
+  createdAt        DateTime       @default(now())
 
   @@unique([precourseLimitId, order])
 }
@@ -286,7 +286,7 @@ model Grade {
   gradeDepartments GradeDepartment[]
   courseTargets    CourseTarget[]
   createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
+  updatedAt        DateTime?          @updatedAt
 }
 
 /// 系所年級代碼 (年級分組)
@@ -337,13 +337,13 @@ model Classroom {
 
   // 1-n
   translations ClassroomTranslation[]
-  schedules     Schedule[]
+  schedules    Schedule[]
 
   // ex:
   // name / location/ buildingName
   // 小班教室01/ 基礎醫學大樓B1 / 基礎醫學大樓    
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 model ClassroomTranslation {
@@ -363,25 +363,25 @@ model ClassroomTranslation {
 /// 實習分組，來自舊系統 NOL table `cougrp`
 // 原本的資料沒有i18n
 model PracticeGroup {
-  id            String   @id @db.Uuid
+  id           String   @id @db.Uuid
   // 轉換資料進我們的DB時，parsed with `semester`+`code 課程識別碼`
-  courseId      String   @db.Uuid
+  courseId     String   @db.Uuid
   ///組別
   // ex: A、B、C
-  group         String   @db.VarChar(1)
+  group        String   @db.VarChar(1)
   /// 學生人數
   studentQuota Int
   /// 教學助理人數
   taQuota      Int
   /// 上課時間地點
   /// 1~7: 星期一到星期日
-  weekday       Int
+  weekday      Int
   // ex: ['7','8','A']
-  lessons       String[]
+  lessons      String[]
   /// 可能存教室名稱組合string 
   // ex: 公衛214,討論室213 
-  classroom     String
-  comment       String
+  classroom    String
+  comment      String
 
   course    Course   @relation(fields: [courseId], references: [id])
   createdAt DateTime @default(now())
@@ -389,15 +389,15 @@ model PracticeGroup {
 
 /// 學期
 model Semester {
-  id        String   @id @db.Uuid
-  year      String   @db.VarChar(3)
+  id        String    @id @db.Uuid
+  year      String    @db.VarChar(3)
   /// 1 or 2 上下學期
-  semester  String   @db.VarChar(1)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  semester  String    @db.VarChar(1)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
 
-  course                   Course[]
-  progresses                 Progress[]
+  course                    Course[]
+  progresses                Progress[]
   preseletectedCourseTables PreseletectedCourseTable[]
   courseCollections         CourseCollection[]
 
@@ -418,7 +418,7 @@ model Progress {
   /// 結束時間
   endAt          DateTime
   createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  updatedAt      DateTime?    @updatedAt
 }
 
 /// 選設進度類型
@@ -429,11 +429,11 @@ model Progress {
 /// 加退選W2
 /// 加退選W3
 model ProgressType {
-  id                      String                    @id @db.Uuid
-  sort                    Int
-  createdAt               DateTime                  @default(now())
-  updatedAt               DateTime                  @updatedAt
-  progresses                Progress[]
+  id                       String                    @id @db.Uuid
+  sort                     Int
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime?                 @updatedAt
+  progresses               Progress[]
   progressTypeTranslations ProgressTypeTranslation[]
 }
 
@@ -443,7 +443,7 @@ model ProgressTypeTranslation {
   progressTypeId String       @db.Uuid
   progressType   ProgressType @relation(fields: [progressTypeId], references: [id])
   createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  updatedAt      DateTime?    @updatedAt
 
   @@unique([language, progressTypeId])
 }
@@ -510,15 +510,15 @@ model CourseCustomTypeTranslation {
 /// 領域專長說明主表
 model SpecializationProgram {
   /// 領域專長代碼
-  code  String  @id @db.VarChar(10)
+  code       String  @id @db.VarChar(10)
   /// 是否通過
-  apply Boolean
+  isAdmitted Boolean
 
   translations SpecializationProgramTranslation[]
   courses      CourseSpecializationProgram[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 model SpecializationProgramTranslation {
@@ -555,21 +555,21 @@ model CourseSpecializationProgram {
 /// 課程大綱主表
 model Syllabus {
   // 使用ceiba db的流水號id
-  id            Int      @id
-  courseId      String   @unique @db.Uuid
-  course        Course   @relation(fields: [courseId], references: [id])
+  id                    Int      @id
+  courseId              String   @unique @db.Uuid
+  course                Course   @relation(fields: [courseId], references: [id])
   // 可以找到老師或助教的時間
   // 與model SyllabusOfficeTime不同
   // 原本於ceiba就有兩種形式
   // table office_time_sw.sw
   // 為0時，表示為須預約。 為1時，固定時
-  needReserved  Boolean?
+  isRequiredAppointment Boolean?
   // table office_time_sw.coment
   // 舊課程網畫面上稱office hour
-  officeComment String?
+  officeComment         String?
 
-  createdAt                   DateTime                      @default(now())
-  updatedAt                   DateTime                      @updatedAt
+  createdAt                    DateTime                      @default(now())
+  updatedAt                    DateTime?                     @updatedAt
   syllabusTranslations         SyllabusTranslation[]
   syllabusRateTranslations     SyllabusRateTranslation[]
   syllabusProgressTranslations SyllabusProgressTranslation[]
@@ -585,9 +585,9 @@ model SyllabusOfficeTime {
   week       Int
   /// 開始時間
   // ex: 09:15
-  startAt      String   @db.VarChar(5)
+  startAt    String   @db.VarChar(5)
   // 結束時間
-  endAt        String   @db.VarChar(5)
+  endAt      String   @db.VarChar(5)
   createdAt  DateTime @default(now())
 
   @@unique([syllabusId, week, startAt, endAt])
@@ -658,16 +658,16 @@ model SyllabusProgressTranslation {
 // User
 // ########################################
 model User {
-  id                       String                     @id @default(uuid()) @db.Uuid
+  id                        String                     @id @default(uuid()) @db.Uuid
   // 人事室教職員編號 5碼 或 學生學號 9碼
-  sequence                 String
-  userType                 UserType
-  departmentId             String?                    @db.VarChar(4)
-  department               Department?                @relation(fields: [departmentId], references: [id])
+  sequence                  String
+  userType                  UserType
+  departmentId              String?                    @db.VarChar(4)
+  department                Department?                @relation(fields: [departmentId], references: [id])
   /// 年級
-  grade                    Int?
-  createdAt                DateTime                   @default(now())
-  updatedAt                DateTime                   @updatedAt
+  grade                     Int?
+  createdAt                 DateTime                   @default(now())
+  updatedAt                 DateTime?                  @updatedAt
   courseCollections         CourseCollection[]
   userInfoTranslations      UserInfoTranslation[]
   preseletectedCourseTables PreseletectedCourseTable[]
@@ -675,14 +675,15 @@ model User {
 
 model UserInfoTranslation {
   language  Language
-  userId    String   @db.Uuid
-  user      User     @relation(fields: [userId], references: [id])
-  name      String
+  userId    String    @db.Uuid
+  user      User      @relation(fields: [userId], references: [id])
+  // 學生姓名 不一定會有英文名稱，或外籍生無中文名
+  name      String?
   /// 組別， 只有學生才有
-  // ex: 國際關係組
+  // ex: 政治系國際關係組 or DEPARTMENT OF POLITICAL SCIENCE, INTERNATIONAL RELATIONS DIVISION
   group     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
 
   @@id([language, userId])
 }
@@ -700,7 +701,7 @@ model CourseCollection {
   semesterId String   @db.Uuid
   semester   Semester @relation(fields: [semesterId], references: [id])
 
-  createdAt            DateTime               @default(now())
+  createdAt             DateTime               @default(now())
   courseCollectionItems CourseCollectionItem[]
 }
 
@@ -717,13 +718,14 @@ model CourseCollectionItem {
 
 /// 預選課表主體
 model PreseletectedCourseTable {
-  id                           String                         @id @default(uuid()) @db.Uuid
+  id                            String                         @id @default(uuid()) @db.Uuid
+  type                          PreseletectedCourseTableType
   /// 學期Id
-  semesterId                   String                         @db.Uuid
-  semester                     Semester                       @relation(fields: [semesterId], references: [id])
-  studentId                    String                         @db.Uuid
-  user                         User                           @relation(fields: [studentId], references: [id])
-  createdAt                    DateTime                       @default(now())
+  semesterId                    String                         @db.Uuid
+  semester                      Semester                       @relation(fields: [semesterId], references: [id])
+  studentId                     String                         @db.Uuid
+  user                          User                           @relation(fields: [studentId], references: [id])
+  createdAt                     DateTime                       @default(now())
   preseletectedCourseTableItems PreseletectedCourseTableItem[]
 }
 
@@ -820,4 +822,12 @@ enum GeneralMark {
 enum UserType {
   Student
   Staff
+}
+
+enum PreseletectedCourseTableType {
+  Chinese
+  Calculus
+  ForeignLanguage
+  /// 一般科目
+  Common
 }
