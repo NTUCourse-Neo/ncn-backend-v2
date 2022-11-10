@@ -75,7 +75,7 @@ model Course {
   // 可以設定成不同的建議授課年級、選必修、通識, etc.
   targets                       CourseTarget[]
   translations                  CourseTranslation[]
-  preseletectedCourseTableItems PreseletectedCourseTableItem[]
+  preselectedCourseTableItems PreselectedCourseTableItem[]
   courseCollectionItems         CourseCollectionItem[]
 
   // n-1
@@ -400,7 +400,7 @@ model Semester {
 
   course                    Course[]
   progresses                Progress[]
-  preseletectedCourseTables PreseletectedCourseTable[]
+  PreselectedCourseTables PreselectedCourseTable[]
   courseCollections         CourseCollection[]
 
   @@unique([year, semester])
@@ -596,24 +596,24 @@ model SyllabusOfficeTime {
 }
 
 model SyllabusTranslation {
-  language          Language
-  syllabusId        Int
-  syllabus          Syllabus @relation(fields: [syllabusId], references: [id])
+  language        Language
+  syllabusId      Int
+  syllabus        Syllabus @relation(fields: [syllabusId], references: [id])
   // aca_course_goal table
   /// 課程概述
-  describe          String?
+  describe        String?
   /// 課程目標
-  goal              String?
+  goal            String?
   /// 課程要求
   // 原background
-  requirement       String?
+  requirement     String?
   // 預計課後學習時數
-  workLoad          String?
+  workLoad        String?
   // 指定閱讀
-  designatedReading String?
+  assignedReading String?
   // aca_course_book
   /// 參考書目
-  book              String?
+  ReferenceBook   String?
 
   createdAt DateTime @default(now())
 
@@ -667,12 +667,12 @@ model User {
   departmentId              String?                    @db.VarChar(4)
   department                Department?                @relation(fields: [departmentId], references: [id])
   /// 年級
-  grade                     Int?
+  grade                     String?
   createdAt                 DateTime                   @default(now())
   updatedAt                 DateTime?                  @updatedAt
   courseCollections         CourseCollection[]
   userInfoTranslations      UserInfoTranslation[]
-  preseletectedCourseTables PreseletectedCourseTable[]
+  PreselectedCourseTables PreselectedCourseTable[]
 }
 
 model UserInfoTranslation {
@@ -719,23 +719,23 @@ model CourseCollectionItem {
 }
 
 /// 預選課表主體
-model PreseletectedCourseTable {
+model PreselectedCourseTable {
   id                            String                         @id @default(uuid()) @db.Uuid
-  type                          PreseletectedCourseTableType
+  type                          PreselectedCourseTableType
   /// 學期Id
   semesterId                    String                         @db.Uuid
   semester                      Semester                       @relation(fields: [semesterId], references: [id])
   studentId                     String                         @db.Uuid
   user                          User                           @relation(fields: [studentId], references: [id])
   createdAt                     DateTime                       @default(now())
-  preseletectedCourseTableItems PreseletectedCourseTableItem[]
+  PreselectedCourseTableItems PreselectedCourseTableItem[]
 }
 
 /// 預選課表項目
-model PreseletectedCourseTableItem {
+model PreselectedCourseTableItem {
   /// 預選課表主體uuid
-  preseletectedCourseTableId String                   @db.Uuid
-  preseletedCourseTable      PreseletectedCourseTable @relation(fields: [preseletectedCourseTableId], references: [id])
+  PreselectedCourseTableId String                   @db.Uuid
+  preseletedCourseTable      PreselectedCourseTable @relation(fields: [PreselectedCourseTableId], references: [id])
   /// 課程uuid
   courseId                   String                   @db.Uuid
   course                     Course                   @relation(fields: [courseId], references: [id])
@@ -743,7 +743,7 @@ model PreseletectedCourseTableItem {
   order                      Int
   createdAt                  DateTime                 @default(now())
 
-  @@id([preseletectedCourseTableId, courseId])
+  @@id([PreselectedCourseTableId, courseId])
 }
 
 // ########################################
@@ -826,7 +826,7 @@ enum UserType {
   Staff
 }
 
-enum PreseletectedCourseTableType {
+enum PreselectedCourseTableType {
   Chinese
   Calculus
   ForeignLanguage
