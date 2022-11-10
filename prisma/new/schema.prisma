@@ -1,0 +1,835 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URL")
+}
+
+/// 課程檔
+model Course {
+  id         String  @id @default(uuid()) @db.Uuid
+  /// 流水號, 可能無值
+  serial     String? @db.VarChar(5)
+  /// 課號
+  // 範例值: Common1011	
+  // 可從原 departmentAbbreviation (dpt_abbr) + codeSerial(cou_teacno) 組合來\
+  identifier String  @db.VarChar(10)
+  /// 課程識別碼
+  code       String  @db.VarChar(10)
+  /// 班次
+  // 舊db無值時會存空字串，要轉為null
+  class      String? @db.VarChar(3)
+
+  /// 全學年制, 舊系統為1 為全學年制，2為半學年制 
+  // 原forth
+  isFullYear                   Boolean
+  /// 學分
+  credits                      Decimal
+  /// 狀態
+  // 原co_chg  
+  status                       CourseStatus   @default(Normal)
+  /// 加簽方式
+  enrollMethod                 Int
+  /// 英語授課，來自舊系統NOL table english
+  isEnglishTaught              Boolean
+  /// 可充當外文領域
+  // 舊系統需join另一張table asforcou
+  asForeign                    Boolean
+  /// 為共同選修課
+  // 舊系統需join另一張table commopt
+  isCommon                     Boolean
+  /// 密集課程的週次
+  intensiveWeeks               Int[]          @default([])
+  /// 課程大綱網址
+  // 舊系統 NOL table `ntu_course`
+  // 通常是外連到師大或台科大系統課綱
+  externalSyllabusUrl          String?        @db.VarChar(200)
+  /// 修課總人數
+  // 原tno
+  totalStudentQuota            Int
+  /// 外系人數 Int
+  // 原eno
+  otherDepartmentsStudentQuota Int
+  /// 外校人數 Int
+  // 原ono
+  nonNtuStudentQuota           Int
+  /// 可加選人數 Int
+  // 原sno
+  enrollableStudentQuota       Int
+  /// 異動項目
+  // chgitem
+  changeItems                  CourseChange[]
+
+  // 1-1
+  syllabus Syllabus?
+
+  // 1-n
+  schedules                     Schedule[]
+  practiceGroups                PracticeGroup[]
+  /// 修課限制
+  limits                        CourseLimit[]
+  /// 授課對象相關設定
+  // 一門課根據系所進行不同設定 
+  // 可以設定成不同的建議授課年級、選必修、通識, etc.
+  targets                       CourseTarget[]
+  translations                  CourseTranslation[]
+  preselectedCourseTableItems PreselectedCourseTableItem[]
+  courseCollectionItems         CourseCollectionItem[]
+
+  // n-1
+  /// 教師代碼
+  teacherId  String
+  teacher    Teacher  @relation(fields: [teacherId], references: [id])
+  /// 學期
+  semesterId String   @db.Uuid
+  semester   Semester @relation(fields: [semesterId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  // m-n
+  specializedPrograms   CourseSpecializedProgram[]
+  coursePrecourseLimits CoursePrecourseLimit[]
+}
+
+model CourseTranslation {
+  language Language
+
+  /// 課程名稱
+  name    String
+  /// 課程備註
+  comment String?
+
+  courseId String @db.Uuid
+  course   Course @relation(fields: [courseId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@id([language, courseId])
+}
+
+model Schedule {
+  /// 1~7: 星期一到星期日
+  weekday     Int
+  // ex: ['7','8','A']
+  intervals   String[]
+  classroomId String    @db.Uuid
+  classroom   Classroom @relation(fields: [classroomId], references: [id])
+
+  courseId String @db.Uuid
+  course   Course @relation(fields: [courseId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@id([courseId, weekday])
+}
+
+model Department {
+  // 系所代碼，來自舊系統 `dpt_code`
+  id       String @id @db.VarChar(4)
+  /// 人事單位代碼，來自舊系統 NOL table `dep_unit.adcd`
+  hrSerial String @db.VarChar(7)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users            User[]
+  translations     DepartmentTranslation[]
+  courseTargets    CourseTarget[]
+  gradeDepartments GradeDepartment[]
+}
+
+model DepartmentTranslation {
+  language     Language
+  departmentId String     @db.VarChar(4)
+  department   Department @relation(fields: [departmentId], references: [id])
+  /// 系所名稱
+  name         String
+  /// 系所簡稱
+  shortName    String
+  createdAt    DateTime   @default(now())
+
+  @@id([language, departmentId])
+}
+
+/// 課程 授課對象
+model CourseTarget {
+  courseId     String     @db.Uuid
+  course       Course     @relation(fields: [courseId], references: [id])
+  departmentId String     @db.VarChar(7)
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  // 每個課程根據授課對象不同，可再對以下欄位進行個別調整
+
+  /// 授課對象建議年級分類
+  // 原year
+  gradeId        String        @db.VarChar(1)
+  grade          Grade         @relation(fields: [gradeId], references: [id])
+  /// 課程類別
+  // 原co_tp 
+  type           CourseType /// 課程類別
+  /// 必選修
+  // 來自舊系統 `sel_code` 3為必修、 7為選修
+  isCompulsory   Boolean
+  /// 預分配 
+  // `來自舊系統 co_rep`, 在以前的db可能是null
+  isPreallocated Boolean?
+  /// 通識領域當 `type === General` 時才使用
+  // 原co_gmark
+  generalMark    GeneralMark[]
+  /// 通識課程配有TA，非通識課程為null，來自舊系統NOL table com
+  isTaAssigned   Boolean?
+
+  @@id([courseId, departmentId, gradeId])
+}
+
+/// 計中認證後取得5碼人員編號轉換教務處使用之6碼教師代碼用，來自舊系統 NOL table `tea_emp`, 
+model Teacher {
+  /// 教師代碼，來自舊系統 `tea_code2`
+  id         String @id @db.VarChar(6)
+  /// 人員編號
+  employeeId String @db.VarChar(5)
+
+  courses      Course[]
+  translations TeacherTranslation[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model TeacherTranslation {
+  language Language
+
+  /// 教師名稱
+  name String
+
+  teacherId String  @db.VarChar(6)
+  teacher   Teacher @relation(fields: [teacherId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@id([language, teacherId])
+}
+
+/// 修課限制
+// ex: 限學士班二年級以上
+// 來自舊系統 NOL table `ifcrfsl`
+model CourseLimit {
+  id           String                   @id @db.VarChar(3)
+  courses      Course[]
+  translations CourseLimitTranslation[]
+
+  createdAt DateTime @default(now())
+}
+
+model CourseLimitTranslation {
+  language Language
+
+  /// 限制說明
+  description String
+
+  limitId String      @db.VarChar(3)
+  limit   CourseLimit @relation(fields: [limitId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@id([language, limitId])
+}
+
+/// 先修限制主表，來自舊系統 NTU table `ifcrfpre`
+model PrecourseLimit {
+  id                 String             @id @db.Uuid
+  /// 課程識別碼
+  courseCode         String             @db.VarChar(9)
+  identificationType IdentificationType
+  studentLimitType   StudentLimitType
+
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime?              @updatedAt
+  precourseLimitCourses PrecourseLimitCourse[]
+  coursePrecourseLimits CoursePrecourseLimit[]
+}
+
+/// 先擋修科目，來自舊系統 NTU table `ifcrfprer`
+model PrecourseLimitCourse {
+  precourseLimitId String         @db.Uuid
+  precouseLimit    PrecourseLimit @relation(fields: [precourseLimitId], references: [id])
+  /// 序號
+  order            Int
+  /// 先修科目 (課程識別碼 或 課程名稱)
+  precourse        String         @db.VarChar(20)
+  /// 及格分數
+  requiredScore    Int
+  /// 當學期是否並修
+  isCorequisite    Boolean
+  createdAt        DateTime       @default(now())
+
+  @@unique([precourseLimitId, order])
+}
+
+/// 課程主表 與 先修限制 m-n
+model CoursePrecourseLimit {
+  courseId         String         @db.Uuid
+  course           Course         @relation(fields: [courseId], references: [id])
+  precourseLimitId String         @db.Uuid
+  precouseLimit    PrecourseLimit @relation(fields: [precourseLimitId], references: [id])
+  createdAt        DateTime       @default(now())
+
+  @@id([courseId, precourseLimitId])
+}
+
+/// 年級代碼 (年級分組)
+// 來自舊系統 NOL table `ifcrfcn`
+model Grade {
+  id               String             @id @db.VarChar(1)
+  translations     GradeTranslation[]
+  gradeDepartments GradeDepartment[]
+  courseTargets    CourseTarget[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime?          @updatedAt
+}
+
+/// 系所年級代碼 (年級分組)
+// 來自舊系統 NOL table `ifcrfyl`
+model GradeDepartment {
+  gradeId      String     @db.VarChar(1)
+  grade        Grade      @relation(fields: [gradeId], references: [id])
+  departmentId String     @db.VarChar(4)
+  department   Department @relation(fields: [departmentId], references: [id])
+  /// 下拉選單順序，來自舊系統 `Cl_seq`
+  order        Int
+  createdAt    DateTime   @default(now())
+
+  @@unique([gradeId, departmentId, order])
+}
+
+model GradeTranslation {
+  language  Language
+  /// 年級名稱
+  name      String
+  gradeId   String   @db.VarChar(1)
+  grade     Grade    @relation(fields: [gradeId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@id([language, gradeId])
+}
+
+/// 來自舊系統 NOL table `ifcrfcr`
+model Classroom {
+  id            String  @id @db.Uuid
+  name          String  @db.VarChar(9)
+  location      String? @db.VarChar(22)
+  buildingName  String? @db.VarChar(32)
+  /// 用於產生外部地圖連結
+  // 原buileren
+  buildingId    String? @db.VarChar(8)
+  /// 無障礙設施
+  // 原先barrier_free 說明為 
+  // 1:有電梯
+  // 2:有無障礙設施
+  // 但db內只有存1 資料
+  // TODO：是否當作有電梯就為true，不管無障礙設施?
+  accessibility Boolean
+  // for 台大課程地圖參數使用
+  // 值只有build || empty string
+  // 可能是在課程地圖有紀錄的大樓?
+  layer         String?
+
+  // 1-n
+  translations ClassroomTranslation[]
+  schedules    Schedule[]
+
+  // ex:
+  // name / location/ buildingName
+  // 小班教室01/ 基礎醫學大樓B1 / 基礎醫學大樓    
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model ClassroomTranslation {
+  language Language
+
+  /// 教室詳細資料 
+  // 原sitechi / siteeng
+  detail String
+
+  classroomId String    @db.Uuid
+  classroom   Classroom @relation(fields: [classroomId], references: [id])
+  createdAt   DateTime  @default(now())
+
+  @@id([language, classroomId])
+}
+
+/// 實習分組，來自舊系統 NOL table `cougrp`
+// 原本的資料沒有i18n
+model PracticeGroup {
+  id           String   @id @db.Uuid
+  // 轉換資料進我們的DB時，parsed with `semester`+`code 課程識別碼`
+  courseId     String   @db.Uuid
+  ///組別
+  // ex: A、B、C
+  group        String   @db.VarChar(1)
+  /// 學生人數
+  studentQuota Int
+  /// 教學助理人數
+  taQuota      Int
+  /// 上課時間地點
+  /// 1~7: 星期一到星期日
+  weekday      Int
+  // ex: ['7','8','A']
+  lessons      String[]
+  /// 可能存教室名稱組合string 
+  // ex: 公衛214,討論室213 
+  classroom    String
+  comment      String
+
+  course    Course   @relation(fields: [courseId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+/// 學期
+model Semester {
+  id        String    @id @db.Uuid
+  year      String    @db.VarChar(3)
+  /// 1 or 2 上下學期
+  semester  String    @db.VarChar(1)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  course                    Course[]
+  progresses                Progress[]
+  PreselectedCourseTables PreselectedCourseTable[]
+  courseCollections         CourseCollection[]
+
+  @@unique([year, semester])
+}
+
+/// 選課進度
+model Progress {
+  id             String       @id @db.Uuid
+  /// 學期id
+  semesterId     String       @db.Uuid
+  /// 學期
+  semester       Semester     @relation(fields: [semesterId], references: [id])
+  progressTypeId String       @db.Uuid
+  progressType   ProgressType @relation(fields: [progressTypeId], references: [id])
+  /// 開始時間
+  startAt        DateTime
+  /// 結束時間
+  endAt          DateTime
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime?    @updatedAt
+}
+
+/// 選設進度類型
+/// 初選
+/// 一階
+/// 二階
+/// 加退選W1
+/// 加退選W2
+/// 加退選W3
+model ProgressType {
+  id                       String                    @id @db.Uuid
+  sort                     Int
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime?                 @updatedAt
+  progresses               Progress[]
+  progressTypeTranslations ProgressTypeTranslation[]
+}
+
+model ProgressTypeTranslation {
+  language       Language
+  name           String
+  progressTypeId String       @db.Uuid
+  progressType   ProgressType @relation(fields: [progressTypeId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime?    @updatedAt
+
+  @@unique([language, progressTypeId])
+}
+
+// ########################################
+//  核心能力相關
+// ########################################
+
+// TODO: 尚無訪問course map的權限，根據舊課程網畫面，可能不需要存以下資料
+
+/// 系所核心能力
+model DeparmentCapability {
+  /// 系所代碼
+  deparmentId    String @db.VarChar(4)
+  /// 核心代碼
+  capabilityCode String @db.VarChar(1)
+
+  @@unique([deparmentId, capabilityCode])
+}
+
+/// 核心能力類型
+model CapabilityType {
+  /// 核心代碼， [A-Z]
+  code String @id @db.VarChar(1)
+
+  translations CapabilityTypeTranslation[]
+}
+
+model CapabilityTypeTranslation {
+  language Language
+
+  name    String
+  comment String
+
+  typeCode String         @db.VarChar(1)
+  type     CapabilityType @relation(fields: [typeCode], references: [code])
+
+  @@id([language, typeCode])
+}
+
+/// 課程分類
+model CourseCustomType {
+  /// 課程分類代碼， [A-Z]
+  code String @id @db.VarChar(1)
+
+  translations CourseCustomTypeTranslation[]
+}
+
+model CourseCustomTypeTranslation {
+  language Language
+
+  name String
+
+  typeCode String           @db.VarChar(1)
+  type     CourseCustomType @relation(fields: [typeCode], references: [code])
+
+  @@id([language, typeCode])
+}
+
+// ########################################
+//  領域專長
+// ########################################
+
+/// 領域專長說明主表
+model SpecializedProgram {
+  /// 領域專長代碼
+  code       String  @id @db.VarChar(10)
+  /// 是否通過
+  isAdmitted Boolean
+
+  translations SpecializedProgramTranslation[]
+  courses      CourseSpecializedProgram[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model SpecializedProgramTranslation {
+  language Language
+
+  name String
+
+  specializedProgramCode String             @db.VarChar(1)
+  specializedProgram     SpecializedProgram @relation(fields: [specializedProgramCode], references: [code])
+
+  createdAt DateTime @default(now())
+
+  @@id([language, specializedProgramCode])
+}
+
+/// 課程領域專長關聯
+model CourseSpecializedProgram {
+  /// 課程識別碼
+  courseId String @db.Uuid
+  course   Course @relation(fields: [courseId], references: [id])
+
+  /// 領域專長代碼
+  specializedProgramCode String             @db.VarChar(10)
+  specializedProgram     SpecializedProgram @relation(fields: [specializedProgramCode], references: [code])
+  createdAt              DateTime           @default(now())
+
+  @@unique([courseId, specializedProgramCode])
+}
+
+// ########################################
+// 課程大綱 from ceiba db
+// ########################################
+
+/// 課程大綱主表
+model Syllabus {
+  // 使用ceiba db的流水號id
+  id                    Int      @id
+  courseId              String   @unique @db.Uuid
+  course                Course   @relation(fields: [courseId], references: [id])
+  // 可以找到老師或助教的時間
+  // 與model SyllabusOfficeTime不同
+  // 原本於ceiba就有兩種形式
+  // table office_time_sw.sw
+  // 為0時，表示為須預約。 為1時，固定時
+  isRequiredAppointment Boolean?
+  // table office_time_sw.coment
+  // 舊課程網畫面上稱office hour
+  officeComment         String?
+
+  createdAt                    DateTime                      @default(now())
+  updatedAt                    DateTime?                     @updatedAt
+  syllabusTranslations         SyllabusTranslation[]
+  syllabusRateTranslations     SyllabusRateTranslation[]
+  syllabusProgressTranslations SyllabusProgressTranslation[]
+  syllabusOfficeTimes          SyllabusOfficeTime[]
+}
+
+/// 可以找到老師或助教的時間
+// ceiba aca_office_time
+model SyllabusOfficeTime {
+  syllabusId Int
+  syllabus   Syllabus @relation(fields: [syllabusId], references: [id])
+  /// 星期幾
+  week       Int
+  /// 開始時間
+  // ex: 09:15
+  startAt    String   @db.VarChar(5)
+  // 結束時間
+  endAt      String   @db.VarChar(5)
+  createdAt  DateTime @default(now())
+
+  @@unique([syllabusId, week, startAt, endAt])
+}
+
+model SyllabusTranslation {
+  language        Language
+  syllabusId      Int
+  syllabus        Syllabus @relation(fields: [syllabusId], references: [id])
+  // aca_course_goal table
+  /// 課程概述
+  describe        String?
+  /// 課程目標
+  goal            String?
+  /// 課程要求
+  // 原background
+  requirement     String?
+  // 預計課後學習時數
+  workLoad        String?
+  // 指定閱讀
+  assignedReading String?
+  // aca_course_book
+  /// 參考書目
+  ReferenceBook   String?
+
+  createdAt DateTime @default(now())
+
+  @@id([language, syllabusId])
+}
+
+/// 大綱 評分方式
+// ceiba.aca_course_req
+model SyllabusRateTranslation {
+  language   Language
+  syllabusId Int
+  syllabus   Syllabus @relation(fields: [syllabusId], references: [id])
+  /// 評分項目
+  content    String   @db.VarChar(60)
+  percent    Int
+  note       String?
+
+  createdAt DateTime @default(now())
+
+  // ex: 上課參與 / 60%  / 出席、導讀、報告與討論 
+  @@id([language, syllabusId])
+}
+
+/// 大綱 課程進度
+// ceiba.aca_course_syllabus
+model SyllabusProgressTranslation {
+  language   Language
+  syllabusId Int
+  syllabus   Syllabus @relation(fields: [syllabusId], references: [id])
+  week       Int
+  // ex: string 11/8
+  date       String
+  // 原subject
+  content    String
+  // 過了設定的期限才會顯示給同學看見
+  publicDate DateTime
+
+  createdAt DateTime @default(now())
+
+  @@id([language, syllabusId])
+}
+
+// ########################################
+// User
+// ########################################
+model User {
+  id                        String                     @id @default(uuid()) @db.Uuid
+  // 人事室教職員編號 5碼 或 學生學號 9碼
+  sequence                  String
+  userType                  UserType
+  departmentId              String?                    @db.VarChar(4)
+  department                Department?                @relation(fields: [departmentId], references: [id])
+  /// 年級
+  grade                     String?
+  createdAt                 DateTime                   @default(now())
+  updatedAt                 DateTime?                  @updatedAt
+  courseCollections         CourseCollection[]
+  userInfoTranslations      UserInfoTranslation[]
+  PreselectedCourseTables PreselectedCourseTable[]
+}
+
+model UserInfoTranslation {
+  language  Language
+  userId    String    @db.Uuid
+  user      User      @relation(fields: [userId], references: [id])
+  // 學生姓名 不一定會有英文名稱，或外籍生無中文名
+  name      String?
+  /// 組別， 只有學生才有
+  // ex: 政治系國際關係組 or DEPARTMENT OF POLITICAL SCIENCE, INTERNATIONAL RELATIONS DIVISION
+  group     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@id([language, userId])
+}
+
+// ########################################
+// 課表相關
+// ########################################
+
+/// 課程收藏 主體
+model CourseCollection {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id])
+  /// 學期Id
+  semesterId String   @db.Uuid
+  semester   Semester @relation(fields: [semesterId], references: [id])
+
+  createdAt             DateTime               @default(now())
+  courseCollectionItems CourseCollectionItem[]
+}
+
+/// 課程收藏項目
+model CourseCollectionItem {
+  courseCollectionId String           @db.Uuid
+  courseCollection   CourseCollection @relation(fields: [courseCollectionId], references: [id])
+  courseId           String           @db.Uuid
+  course             Course           @relation(fields: [courseId], references: [id])
+  createdAt          DateTime         @default(now())
+
+  @@id([courseCollectionId, courseId])
+}
+
+/// 預選課表主體
+model PreselectedCourseTable {
+  id                            String                         @id @default(uuid()) @db.Uuid
+  type                          PreselectedCourseTableType
+  /// 學期Id
+  semesterId                    String                         @db.Uuid
+  semester                      Semester                       @relation(fields: [semesterId], references: [id])
+  studentId                     String                         @db.Uuid
+  user                          User                           @relation(fields: [studentId], references: [id])
+  createdAt                     DateTime                       @default(now())
+  PreselectedCourseTableItems PreselectedCourseTableItem[]
+}
+
+/// 預選課表項目
+model PreselectedCourseTableItem {
+  /// 預選課表主體uuid
+  PreselectedCourseTableId String                   @db.Uuid
+  preseletedCourseTable      PreselectedCourseTable @relation(fields: [PreselectedCourseTableId], references: [id])
+  /// 課程uuid
+  courseId                   String                   @db.Uuid
+  course                     Course                   @relation(fields: [courseId], references: [id])
+  /// 志願序
+  order                      Int
+  createdAt                  DateTime                 @default(now())
+
+  @@id([PreselectedCourseTableId, courseId])
+}
+
+// ########################################
+// enum
+// ########################################
+
+enum CourseType {
+  /// 一般
+  Normal
+  /// 分班
+  Grouped
+  /// 通識
+  General
+  /// 教育學程
+  EducationProgram
+  /// 夜間部
+  NightSchool
+  /// 體育
+  PhysicalEducation
+  /// 軍訓
+  MilitaryTrainingClass
+}
+
+enum CourseStatus {
+  Normal
+  New
+  Updated
+  Canceled
+}
+
+enum CourseChange {
+  Time
+  Class
+  Teacher
+  StudentNumber
+  OtherDeparmentsStudentNum
+  // 原值6、7、B皆為備註異動
+  Mark
+  Enroll
+}
+
+enum IdentificationType {
+  // 課程識別碼
+  CourseCode
+  CourseName
+}
+
+enum StudentLimitType {
+  /// 本系學士班
+  DepatmentBachelor
+  /// 本校學士班
+  SchoolBachelor
+  /// 本系學士班 含研究生
+  DepatmentBachelorAndGraduateStudent
+  /// 本校學士班 含研究生
+  SchoolBachelorAndGraduateStudent
+}
+
+enum Language {
+  zh_TW @map("zh-TW")
+  en_US @map("en-US")
+}
+
+enum GeneralMark {
+  A1
+  A2
+  A3
+  A4
+  A5
+  A6
+  A7
+  A8
+  B
+  /// 可充抵
+  C
+}
+
+enum UserType {
+  Student
+  Staff
+}
+
+enum PreselectedCourseTableType {
+  Chinese
+  Calculus
+  ForeignLanguage
+  /// 一般科目
+  Common
+}
